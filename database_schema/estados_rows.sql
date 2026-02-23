@@ -1,0 +1,1 @@
+INSERT INTO "public"."estados" ("id", "nombre", "descripcion") VALUES ('1', 'Disponible', null), ('2', 'Ocupado', null), ('3', 'Mantenimiento', null);
