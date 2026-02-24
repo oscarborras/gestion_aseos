@@ -2,6 +2,10 @@ import { createClient } from '@/utils/supabase/server'
 import { BarChart, CheckCircle, Clock10, LogIn, GraduationCap } from 'lucide-react'
 import Link from 'next/link'
 import CurrentTime from '@/components/dashboard/CurrentTime'
+import ElapsedTimer from '@/components/dashboard/ElapsedTimer'
+import { formatInTimeZone } from 'date-fns-tz'
+
+const MADRID_TZ = 'Europe/Madrid'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -9,17 +13,18 @@ export default async function DashboardPage() {
   // Fetch data
   const { data: aseosBase } = await supabase.from('aseos').select('*, estados(nombre)')
 
-  // Calcular el rango de hoy (desde las 00:00:00 hasta las 23:59:59)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+  // Calcular el rango de hoy en la zona horaria de Madrid
+  // Obtenemos el inicio y fin del día actual en Madrid en formato ISO
+  const todayStr = formatInTimeZone(new Date(), MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+  const tomorrowDate = new Date()
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+  const tomorrowStr = formatInTimeZone(tomorrowDate, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
 
   const { count: usosTotalesCount } = await supabase
     .from('registros')
     .select('*', { count: 'exact', head: true })
-    .gte('fecha_entrada', today.toISOString())
-    .lt('fecha_entrada', tomorrow.toISOString())
+    .gte('fecha_entrada', todayStr)
+    .lt('fecha_entrada', tomorrowStr)
 
   const usosTotales = usosTotalesCount || 0
   const aseosList = aseosBase || []
@@ -118,17 +123,27 @@ export default async function DashboardPage() {
 
                 {isOcupado ? (
                   <>
-                    <div className="mb-auto">
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Estudiantes</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">
-                        {aseo.ocupado_por || 'Desconocido'}
-                      </p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500">{aseo.curso_alumno || 'Sin curso'}</p>
+                    <div className="mb-auto overflow-y-auto max-h-[140px] pr-2 scrollbar-thin">
+                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-3">Estudiantes</p>
+                      <div className="space-y-4">
+                        {aseo.ocupado_por?.split('; ').map((nombre: string, idx: number) => {
+                          const cursos = aseo.curso_alumno?.split('; ') || [];
+                          const curso = cursos[idx] || 'Sin curso';
+                          return (
+                            <div key={idx} className="border-l-2 border-primary-brand/30 pl-3">
+                              <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                                {nombre}
+                              </p>
+                              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{curso}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 p-3 rounded-xl mt-4">
+                    <div className="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 p-3 rounded-xl mt-4 shrink-0">
                       <Clock10 className="w-4 h-4" />
-                      <span className="text-sm font-bold">Activo</span>
-                      <span className="text-[10px] ml-auto font-medium text-red-400">Transcurrido</span>
+                      <ElapsedTimer startTime={aseo.ultimo_cambio} />
+                      <span className="text-[10px] ml-auto font-medium text-red-400 uppercase tracking-wider">Transcurrido</span>
                     </div>
                   </>
                 ) : (
@@ -173,7 +188,7 @@ export default async function DashboardPage() {
       <footer className="mt-12 text-center border-t border-gray-100 dark:border-gray-800 pt-8 pb-4">
         <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center justify-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          Sistema Operativo • Última sincr: Ahora mismo
+          Sistema de Gestión Escolar • I.E.S. Julio Verne
         </p>
       </footer>
     </div>

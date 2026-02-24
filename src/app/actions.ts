@@ -48,17 +48,17 @@ export async function registrarEntrada(formData: FormData) {
     // Recuperar info actual del aseo para concatenar si ya tenía gente
     const { data: aseoActual } = await supabase.from('aseos').select('ocupado_por, curso_alumno').eq('id', aseoId).single()
 
-    const nuevosNombres = alumnosData.map(a => a.alumno).join(', ')
-    const nuevosCursos = alumnosData.map(a => a.unidad || 'Sin Curso').join(', ')
+    const nuevosNombres = alumnosData.map(a => a.alumno).join('; ')
+    const nuevosCursos = alumnosData.map(a => a.unidad || 'Sin Curso').join('; ')
 
     let ocupado_por = nuevosNombres
     let curso_alumno = nuevosCursos
 
     if (aseoActual?.ocupado_por) {
-        ocupado_por = `${aseoActual.ocupado_por}, ${nuevosNombres}`
+        ocupado_por = `${aseoActual.ocupado_por}; ${nuevosNombres}`
     }
     if (aseoActual?.curso_alumno) {
-        curso_alumno = `${aseoActual.curso_alumno}, ${nuevosCursos}`
+        curso_alumno = `${aseoActual.curso_alumno}; ${nuevosCursos}`
     }
 
     const { error: updateError } = await supabase
@@ -66,7 +66,8 @@ export async function registrarEntrada(formData: FormData) {
         .update({
             estado_id: 2, // 2 = Ocupado
             ocupado_por,
-            curso_alumno
+            curso_alumno,
+            ultimo_cambio: new Date().toISOString()
         })
         .eq('id', aseoId)
 

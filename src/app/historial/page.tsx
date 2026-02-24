@@ -2,13 +2,22 @@ import { createClient } from '@/utils/supabase/server'
 import { CalendarDays, Download, Smile, Meh, Frown, Users } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { formatInTimeZone } from 'date-fns-tz'
 
 export const dynamic = 'force-dynamic'
+
+const MADRID_TZ = 'Europe/Madrid'
 
 export default async function HistorialPage() {
     const supabase = await createClient()
 
-    // Fetch the latest 100 finished records
+    // Calcular el rango de hoy en la zona horaria de Madrid
+    const todayStr = formatInTimeZone(new Date(), MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+    const tomorrowDate = new Date()
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+    const tomorrowStr = formatInTimeZone(tomorrowDate, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+
+    // Fetch finished records for today
     const { data: registros } = await supabase
         .from('registros')
         .select(`
@@ -18,11 +27,12 @@ export default async function HistorialPage() {
       estado_salida,
       observaciones_salida,
       aseos ( nombre ),
-      alumnos ( nombre, cursos ( nombre ) )
+      alumnos ( alumno, unidad )
     `)
         .not('fecha_salida', 'is', null)
+        .gte('fecha_entrada', todayStr)
+        .lt('fecha_entrada', tomorrowStr)
         .order('fecha_salida', { ascending: false })
-        .limit(100)
 
     const getInitials = (name: string) => {
         return name
@@ -137,17 +147,17 @@ export default async function HistorialPage() {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${getRandomColorClass(registro.id)}`}>
-                                                        {getInitials(registro.alumnos?.nombre || '?')}
+                                                        {getInitials(registro.alumnos?.alumno || '?')}
                                                     </div>
                                                     <div className="ml-3">
                                                         <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                                                            {registro.alumnos?.nombre}
+                                                            {registro.alumnos?.alumno}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-slate-600 dark:text-slate-400">
-                                                {registro.alumnos?.cursos?.nombre}
+                                                {registro.alumnos?.unidad}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-medium text-slate-700 dark:text-slate-300">

@@ -28,11 +28,43 @@ export default function EntradaForm({
     const [selectedAseo, setSelectedAseo] = useState<number | undefined>(defaultAseo)
     const [loading, setLoading] = useState(false)
 
-    // Filtrar alumnos por unidad seleccionada y por nombre
+    // Determinar el género activo de la selección (H o M)
+    const selectedGenders = Array.from(new Set(
+        selectedAlumnos.map(id => alumnos.find(a => a.id === id)?.sexo?.toUpperCase()).filter(Boolean)
+    ))
+
+    const activeGender = selectedGenders.length > 0 ? selectedGenders[0] : null
+
+    // Función para normalizar texto (quitar acentos y pasar a minúsculas)
+    const normalize = (text: string) =>
+        text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+
+    // Filtrar alumnos por unidad seleccionada, por nombre y por sexo (si ya hay uno seleccionado)
     const alumnosFiltrados = alumnos.filter(a => {
         const matchesCurso = !selectedCurso || a.unidad === selectedCurso
-        const matchesSearch = !searchQuery || a.alumno.toLowerCase().includes(searchQuery.toLowerCase())
-        return matchesCurso && matchesSearch
+
+        let matchesSearch = true
+        if (searchQuery) {
+            const normalizedSearch = normalize(searchQuery)
+            const normalizedName = normalize(a.alumno)
+            // El nombre coincide si empieza por la búsqueda o si alguna de sus palabras empieza por ella
+            const words = normalizedName.split(/\s+/)
+            matchesSearch = words.some(word => word.startsWith(normalizedSearch))
+        }
+
+        const matchesGender = !activeGender || a.sexo?.toUpperCase() === activeGender
+        return matchesCurso && matchesSearch && matchesGender
+    })
+
+    // Filtrar aseos por disponibilidad y género
+    const aseosDisponibles = aseos.filter(a => {
+        if (a.estado_id !== 1) return false
+        if (!activeGender) return true // Mostrar todo si no hay selección
+
+        if (activeGender === 'H') return a.nombre.toLowerCase().includes('chicos')
+        if (activeGender === 'M') return a.nombre.toLowerCase().includes('chicas')
+
+        return true
     })
 
     const handleAlumnoToggle = (id: string) => {
@@ -154,13 +186,17 @@ export default function EntradaForm({
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {aseos.filter(a => a.estado_id === 1).length === 0 ? (
+                    {aseosDisponibles.length === 0 ? (
                         <div className="col-span-full py-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
                             <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">block</span>
-                            <p className="text-slate-500 font-medium">No hay aseos disponibles en este momento</p>
+                            <p className="text-slate-500 font-medium">
+                                {activeGender
+                                    ? `No hay aseos de ${activeGender === 'H' ? 'chicos' : 'chicas'} disponibles`
+                                    : 'No hay aseos disponibles en este momento'}
+                            </p>
                         </div>
                     ) : (
-                        aseos.filter(a => a.estado_id === 1).map(aseo => {
+                        aseosDisponibles.map(aseo => {
                             const checked = selectedAseo === aseo.id;
 
                             return (
