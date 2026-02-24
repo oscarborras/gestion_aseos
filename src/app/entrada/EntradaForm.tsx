@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { registrarEntrada } from '../actions'
-import { CheckCircle, School, Info, GraduationCap } from 'lucide-react'
+import { CheckCircle, School, Info, GraduationCap, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -23,14 +23,17 @@ export default function EntradaForm({
 }) {
     const router = useRouter()
     const [selectedCurso, setSelectedCurso] = useState<string>('')
+    const [searchQuery, setSearchQuery] = useState<string>('')
     const [selectedAlumnos, setSelectedAlumnos] = useState<string[]>([])
     const [selectedAseo, setSelectedAseo] = useState<number | undefined>(defaultAseo)
     const [loading, setLoading] = useState(false)
 
-    // Filtrar alumnos por unidad seleccionada
-    const alumnosFiltrados = selectedCurso
-        ? alumnos.filter(a => a.unidad === selectedCurso)
-        : alumnos
+    // Filtrar alumnos por unidad seleccionada y por nombre
+    const alumnosFiltrados = alumnos.filter(a => {
+        const matchesCurso = !selectedCurso || a.unidad === selectedCurso
+        const matchesSearch = !searchQuery || a.alumno.toLowerCase().includes(searchQuery.toLowerCase())
+        return matchesCurso && matchesSearch
+    })
 
     const handleAlumnoToggle = (id: string) => {
         setSelectedAlumnos(prev =>
@@ -75,8 +78,8 @@ export default function EntradaForm({
             <div className="space-y-4">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">1. Seleccionar Alumnos</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2 relative md:col-span-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Filtrar por Unidad / Curso
                         </label>
@@ -92,6 +95,22 @@ export default function EntradaForm({
                                     <option key={u} value={u}>{u}</option>
                                 ))}
                             </select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Buscar Alumno
+                        </label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
+                            <input
+                                type="text"
+                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-brand focus:border-primary-brand outline-none transition-all dark:text-white placeholder:text-slate-400"
+                                placeholder="Escribe el nombre del alumno..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>
@@ -148,8 +167,8 @@ export default function EntradaForm({
                                 <label
                                     key={aseo.id}
                                     className={`relative flex flex-col items-center justify-center p-4 border-2 rounded-xl transition-all h-full ${checked
-                                            ? 'border-primary-brand bg-primary-brand/5'
-                                            : 'border-slate-100 dark:border-slate-700 cursor-pointer hover:border-primary-brand/50 bg-white dark:bg-slate-800'
+                                        ? 'border-primary-brand bg-primary-brand/5'
+                                        : 'border-slate-100 dark:border-slate-700 cursor-pointer hover:border-primary-brand/50 bg-white dark:bg-slate-800'
                                         }`}
                                 >
                                     <input

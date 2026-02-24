@@ -133,17 +133,26 @@ export default async function DashboardPage() {
                   </>
                 ) : (
                   <>
-                    <div className="flex-grow flex items-center justify-center">
-                      <div className="h-16 w-16 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                        <CheckCircle className="text-emerald-500 w-8 h-8" />
+                    <div className="flex-grow flex flex-col items-center justify-center">
+                      <div className={`h-16 w-16 rounded-full flex items-center justify-center ${isMantenimiento ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-emerald-50 dark:bg-emerald-900/20'}`}>
+                        {isMantenimiento ? (
+                          <span className="material-symbols-outlined text-orange-500 text-3xl">block</span>
+                        ) : (
+                          <CheckCircle className="text-emerald-500 w-8 h-8" />
+                        )}
                       </div>
+                      {isMantenimiento && (
+                        <p className="text-xs font-bold text-orange-500 uppercase tracking-widest mt-4">No disponible</p>
+                      )}
                     </div>
-                    <Link href={`/entrada?aseo=${aseo.id}`} prefetch={false}>
-                      <button className="mt-6 w-full py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-sm font-bold transition-colors hover:bg-emerald-100 flex items-center justify-center gap-2">
-                        <LogIn className="w-5 h-5" />
-                        Entrada Rápida
-                      </button>
-                    </Link>
+                    {!isMantenimiento && (
+                      <Link href={`/entrada?aseo=${aseo.id}`} prefetch={false}>
+                        <button className="mt-6 w-full py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-sm font-bold transition-colors hover:bg-emerald-100 flex items-center justify-center gap-2">
+                          <LogIn className="w-5 h-5" />
+                          Entrada Rápida
+                        </button>
+                      </Link>
+                    )}
                   </>
                 )}
               </div>

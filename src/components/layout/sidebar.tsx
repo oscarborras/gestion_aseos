@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap } from 'lucide-react'
+import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const routes = [
@@ -22,6 +22,11 @@ const routes = [
         label: 'Salida',
         icon: LogOut,
         href: '/salida',
+    },
+    {
+        label: 'Historial',
+        icon: History,
+        href: '/historial',
     },
     {
         label: 'Ajustes',
