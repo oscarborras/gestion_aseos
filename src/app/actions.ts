@@ -143,6 +143,7 @@ export async function registrarSalida(formData: FormData) {
 
     revalidatePath('/')
     revalidatePath('/salida')
+    revalidatePath('/entregar')
 
     return { success: true }
 }
@@ -174,6 +175,7 @@ export async function toggleMantenimiento(aseoId: number, isMantenimiento: boole
     revalidatePath('/')
     revalidatePath('/mantenimiento')
     revalidatePath('/entrada')
+    revalidatePath('/entregar')
 
     return { success: true }
 }
@@ -251,6 +253,52 @@ export async function solicitarUsoAseo(alumnosIds: string[]) {
     }
 
     revalidatePath('/')
+    revalidatePath('/solicitud')
+
+    return { success: true }
+}
+
+export async function entregarTurno(waitingId: number, alumnoId: string, aseoId: number) {
+    const supabase = await createClient()
+
+    // 1. Obtener datos del alumno
+    const { data: alumno } = await supabase.from('alumnos').select('*').eq('id', alumnoId).single()
+    if (!alumno) return { error: 'Alumno no encontrado' }
+
+    // 2. Marcar como 'en_uso' en la lista de espera
+    const { error: waitError } = await supabase
+        .from('lista_espera')
+        .update({ estado: 'en_uso' })
+        .eq('id', waitingId)
+
+    if (waitError) return { error: 'Error al actualizar lista de espera' }
+
+    // 3. Registrar entrada en el aseo
+    const { error: regError } = await supabase
+        .from('registros')
+        .insert({
+            alumno_id: alumnoId,
+            aseo_id: aseoId
+        })
+
+    if (regError) return { error: 'Error al registrar entrada' }
+
+    // 4. Actualizar estado del aseo
+    const { error: aseoError } = await supabase
+        .from('aseos')
+        .update({
+            estado_id: 2, // Ocupado
+            ocupado_por: alumno.alumno,
+            curso_alumno: alumno.unidad,
+            ultimo_cambio: new Date().toISOString()
+        })
+        .eq('id', aseoId)
+
+    if (aseoError) return { error: 'Error al ocupar el aseo' }
+
+    revalidatePath('/')
+    revalidatePath('/entregar')
+    revalidatePath('/entrada')
     revalidatePath('/solicitud')
 
     return { success: true }

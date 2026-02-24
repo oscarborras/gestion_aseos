@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History, Clock10 } from 'lucide-react'
+import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History, Clock10, Key } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const routes = [
@@ -12,6 +12,13 @@ const routes = [
         href: '/solicitud',
         color: 'text-amber-500',
         activeColor: 'bg-amber-500/10 text-amber-500',
+    },
+    {
+        label: 'Entregar llave',
+        icon: Key,
+        href: '/entregar',
+        color: 'text-emerald-500',
+        activeColor: 'bg-emerald-500/10 text-emerald-500',
     },
     {
         label: 'Inicio',
@@ -80,8 +87,25 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                                     href={route.href}
                                     key={route.href}
                                     className={cn(
-                                        'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-4 mt-2',
+                                        'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-2 mt-2',
                                         'bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
+                                    )}
+                                >
+                                    <route.icon className="w-5 h-5" />
+                                    <span>{route.label}</span>
+                                </Link>
+                            )
+                        }
+
+                        // Diseño especial para "Entregar llave"
+                        if (route.label === 'Entregar llave') {
+                            return (
+                                <Link
+                                    href={route.href}
+                                    key={route.href}
+                                    className={cn(
+                                        'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-4',
+                                        'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
                                     )}
                                 >
                                     <route.icon className="w-5 h-5" />
