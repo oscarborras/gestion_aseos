@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registrar Salida - Aseos Escolares</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1313ec",
+                        "primary-hover": "#0f0fbf",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101022",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .dark .glass-panel {
+            background: rgba(16, 16, 34, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 min-h-screen flex transition-colors duration-300 overflow-hidden">
+<aside class="hidden md:flex flex-col w-64 h-screen glass-panel border-r border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+<div class="p-6 flex items-center gap-3 mb-6">
+<div class="h-10 w-10 bg-primary/10 dark:bg-primary/20 rounded-xl flex items-center justify-center text-primary shrink-0">
+<span class="material-icons-round text-2xl">school</span>
+</div>
+<div>
+<h1 class="font-bold text-lg leading-tight">Aseos</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Gestión Escolar</p>
+</div>
+</div>
+<nav class="flex-grow px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors group" href="#">
+<span class="material-icons-outlined group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-medium">Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors group" href="#">
+<span class="material-icons-outlined group-hover:text-primary transition-colors">login</span>
+<span class="font-medium">Registrar Entrada</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary/5 text-primary rounded-xl font-bold transition-colors" href="#">
+<span class="material-icons-round">logout</span>
+<span>Registrar Salida</span>
+</a>
+</nav>
+<div class="p-4 mt-auto">
+<div class="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+<span class="relative flex h-2.5 w-2.5 shrink-0">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+</span>
+<span class="text-sm font-medium text-slate-600 dark:text-slate-300">2 Ocupados</span>
+</div>
+</div>
+</aside>
+<div class="flex-grow flex flex-col h-screen overflow-hidden">
+<header class="md:hidden w-full glass-panel sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 px-4 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center text-primary">
+<span class="material-icons-round text-xl">school</span>
+</div>
+<h1 class="font-bold text-base">Registrar Salida</h1>
+</div>
+<button class="text-slate-500">
+<span class="material-icons-outlined">menu</span>
+</button>
+</header>
+<main class="flex-grow flex flex-col md:flex-row w-full p-4 md:p-8 gap-6 md:gap-8 overflow-hidden h-full">
+<section class="flex flex-col w-full md:w-5/12 lg:w-4/12 h-full gap-4">
+<div class="flex items-center justify-between mb-2">
+<h2 class="text-xl font-bold text-slate-800 dark:text-white">Aseos Ocupados</h2>
+<span class="text-xs font-bold px-2 py-1 bg-primary/10 text-primary rounded-lg uppercase tracking-wider">En vivo</span>
+</div>
+<div class="flex-grow overflow-y-auto space-y-4 pr-2">
+<div class="group relative bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border-2 border-primary cursor-pointer transition-all duration-200 transform hover:scale-[1.01]">
+<div class="absolute top-4 right-4">
+<div class="flex items-center gap-1.5 px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span class="text-xs font-bold font-mono">04:12</span>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="h-12 w-12 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center shrink-0">
+<span class="material-icons-round text-pink-500 dark:text-pink-400 text-2xl">woman</span>
+</div>
+<div>
+<p class="text-xs font-bold text-primary tracking-wide uppercase mb-1">Planta Baja Chicas</p>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Alex Smith</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Grado 10-B</p>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+<span class="text-xs text-slate-400 dark:text-slate-500">Entrada: 10:15 AM</span>
+<span class="text-sm font-semibold text-primary group-hover:underline">Seleccionar →</span>
+</div>
+</div>
+<div class="group relative bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-slate-700 cursor-pointer transition-all duration-200">
+<div class="absolute top-4 right-4">
+<div class="flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span class="text-xs font-bold font-mono">01:45</span>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+<span class="material-icons-round text-blue-500 dark:text-blue-400 text-2xl">man</span>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-500 dark:text-slate-500 tracking-wide uppercase mb-1">Planta Alta Chicos</p>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Jordan Lee</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Grado 11-A</p>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between opacity-50 group-hover:opacity-100 transition-opacity">
+<span class="text-xs text-slate-400 dark:text-slate-500">Entrada: 10:18 AM</span>
+<span class="text-sm font-semibold text-primary">Seleccionar →</span>
+</div>
+</div>
+</div>
+</section>
+<section class="relative w-full md:w-7/12 lg:w-8/12 bg-white dark:bg-slate-800 rounded-2xl shadow-xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700">
+<div class="h-32 bg-gradient-to-r from-blue-600 to-indigo-700 relative overflow-hidden">
+<div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+<div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-white dark:from-slate-800 to-transparent"></div>
+</div>
+<div class="flex-grow flex flex-col px-8 md:px-12 -mt-12 relative z-10 overflow-y-auto pb-8">
+<div class="flex items-end justify-between mb-8">
+<div>
+<div class="h-20 w-20 rounded-2xl bg-white dark:bg-slate-700 shadow-lg p-1.5 flex items-center justify-center mb-4">
+<div class="h-full w-full bg-slate-100 dark:bg-slate-600 rounded-xl flex items-center justify-center text-3xl font-bold text-primary">
+                                AS
+                            </div>
+</div>
+<h2 class="text-3xl font-bold text-slate-900 dark:text-white">Alex Smith</h2>
+<p class="text-slate-500 dark:text-slate-400">Saliendo de: <span class="font-bold text-primary">Planta Baja Chicas</span></p>
+</div>
+<div class="hidden sm:block text-right">
+<span class="block text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">Tiempo Transcurrido</span>
+<span class="text-4xl font-mono font-bold text-slate-800 dark:text-slate-200">04:12</span>
+</div>
+</div>
+<form class="space-y-8 max-w-2xl">
+<div>
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-wide">
+                            Estado del Aseo al Salir
+                        </label>
+<div class="grid grid-cols-3 gap-4">
+<label class="cursor-pointer group">
+<input checked="" class="peer sr-only" name="status" type="radio" value="good"/>
+<div class="flex flex-col items-center p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700 peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/10 transition-all">
+<span class="material-icons-round text-4xl text-slate-400 group-hover:text-green-500 peer-checked:text-green-600 mb-2 transition-colors">sentiment_satisfied_alt</span>
+<span class="font-bold text-slate-600 dark:text-slate-300 peer-checked:text-green-700 dark:peer-checked:text-green-400">Bueno</span>
+</div>
+</label>
+<label class="cursor-pointer group">
+<input class="peer sr-only" name="status" type="radio" value="average"/>
+<div class="flex flex-col items-center p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 dark:peer-checked:bg-yellow-900/10 transition-all">
+<span class="material-icons-round text-4xl text-slate-400 group-hover:text-yellow-500 peer-checked:text-yellow-600 mb-2 transition-colors">sentiment_neutral</span>
+<span class="font-bold text-slate-600 dark:text-slate-300 peer-checked:text-yellow-700 dark:peer-checked:text-yellow-400">Regular</span>
+</div>
+</label>
+<label class="cursor-pointer group">
+<input class="peer sr-only" name="status" type="radio" value="poor"/>
+<div class="flex flex-col items-center p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700 peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/10 transition-all">
+<span class="material-icons-round text-4xl text-slate-400 group-hover:text-red-500 peer-checked:text-red-600 mb-2 transition-colors">sentiment_dissatisfied</span>
+<span class="font-bold text-slate-600 dark:text-slate-300 peer-checked:text-red-700 dark:peer-checked:text-red-400">Malo</span>
+</div>
+</label>
+</div>
+</div>
+<div>
+<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wide" for="observations">
+                            Observaciones de Salida
+                        </label>
+<div class="relative">
+<div class="absolute top-3 left-3 text-slate-400">
+<span class="material-symbols-outlined text-lg">edit_note</span>
+</div>
+<textarea class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none transition-shadow text-slate-700 dark:text-slate-200 placeholder-slate-400" id="observations" placeholder="¿Algún problema? (ej. falta papel, suelo mojado...)" rows="3"></textarea>
+</div>
+</div>
+<div class="pt-4 flex items-center justify-end gap-4 border-t border-slate-100 dark:border-slate-700">
+<button class="px-6 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 font-bold transition-colors" type="button">
+                            Cancelar
+                        </button>
+<button class="px-8 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl shadow-lg shadow-blue-500/30 font-bold flex items-center gap-2 transform active:scale-95 transition-all" type="button">
+<span class="material-icons-round">check_circle</span>
+                            Confirmar Salida
+                        </button>
+</div>
+</form>
+</div>
+<div class="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 px-8 py-4 flex justify-between items-center text-xs text-slate-400">
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined text-sm">info</span>
+<span>Al confirmar, el aseo 'Planta Baja Chicas' volverá a estar disponible.</span>
+</div>
+<div>ID: #SAL-PB-CH-2490</div>
+</div>
+</section>
+</main>
+</div>
+
+</body></html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Configuración de Mantenimiento - Gestión Escolar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1313ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101022",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .sidebar-item-active {
+            background-color: rgba(19, 19, 236, 0.1);
+            color: #1313ec;
+            border-right: 4px solid #1313ec;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+<div class="p-6">
+<div class="flex items-center gap-2 mb-8">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm">school</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight text-primary">Gestión Escolar</h1>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-sm font-medium">Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">login</span>
+<span class="text-sm font-medium">Entrada</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-sm font-medium">Salida</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-sm font-medium">Historial</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 sidebar-item-active rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+<div>
+<p class="text-xs font-semibold text-slate-900 dark:text-white">Admin Escolar</p>
+<p class="text-[10px] text-slate-500">Administrador</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-8">
+<div class="max-w-5xl mx-auto">
+<header class="mb-10">
+<h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Configuración y Mantenimiento</h2>
+<p class="text-slate-500 dark:text-slate-400">Gestione el estado de disponibilidad y mantenimiento de los sanitarios del centro educativo.</p>
+</header>
+<!-- Status Summary Banner (Quick View) -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-8 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-sm text-slate-700 dark:text-slate-300">Actualmente hay <span class="font-bold text-primary">3 baños disponibles</span> y <span class="font-bold text-orange-600">1 en mantenimiento</span>.</p>
+</div>
+<button class="text-xs font-bold text-primary uppercase tracking-wider hover:underline">Refrescar estado</button>
+</div>
+<!-- Restrooms Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Restroom Card 1: Planta Baja Chicas -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 transition-all hover:shadow-md">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-pink-500">
+<span class="material-symbols-outlined text-2xl">woman</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white">Planta Baja Chicas</h3>
+<p class="text-xs text-slate-500">Acceso principal</p>
+</div>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                Disponible
+                            </span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Estado del servicio</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Restroom Card 2: Planta Baja Chicos -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-primary/20 dark:border-primary/20 p-6 transition-all shadow-sm ring-1 ring-primary/10">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+<span class="material-symbols-outlined text-2xl">man</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white">Planta Baja Chicos</h3>
+<p class="text-xs text-slate-500">Junto a cafetería</p>
+</div>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+                                Mantenimiento
+                            </span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Estado del servicio</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-800">
+<label class="block text-xs font-bold text-slate-500 uppercase tracking-tight mb-2">Motivo de mantenimiento</label>
+<select class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-primary">
+<option value="limpieza">Limpieza profunda</option>
+<option selected="" value="averia">Avería / Reparación</option>
+<option value="otro">Otro motivo</option>
+</select>
+<p class="mt-2 text-[10px] text-slate-400 italic">Visible para los alumnos en la pantalla de entrada.</p>
+</div>
+</div>
+</div>
+<!-- Restroom Card 3: Planta Alta Chicas -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 transition-all hover:shadow-md">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-pink-500">
+<span class="material-symbols-outlined text-2xl">woman</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white">Planta Alta Chicas</h3>
+<p class="text-xs text-slate-500">Ala Norte</p>
+</div>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                Disponible
+                            </span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Estado del servicio</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Restroom Card 4: Planta Alta Chicos -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 transition-all hover:shadow-md">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+<span class="material-symbols-outlined text-2xl">man</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white">Planta Alta Chicos</h3>
+<p class="text-xs text-slate-500">Ala Norte</p>
+</div>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                Disponible
+                            </span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Estado del servicio</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Global Settings Footer -->
+<div class="mt-12 flex items-center justify-between bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">notifications_active</span>
+<p class="text-sm text-slate-600 dark:text-slate-400">Notificar al personal de limpieza automáticamente al cambiar a "Mantenimiento".</p>
+</div>
+<button class="bg-primary text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-primary/20">
+                        Guardar Cambios
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

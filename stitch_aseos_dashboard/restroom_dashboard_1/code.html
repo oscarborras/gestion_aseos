@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Panel de control - SchoolApp</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1313ec",
+                        "primary-light": "#4f4ff5",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101022",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display text-gray-800 dark:text-gray-100 transition-colors duration-200">
+<div class="flex min-h-screen">
+<aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full z-30 flex flex-col justify-between">
+<div>
+<div class="h-20 flex items-center px-6 border-b border-gray-100 dark:border-gray-700">
+<div class="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-icons">school</span>
+</div>
+<span class="ml-3 text-lg font-bold text-gray-900 dark:text-white">SchoolApp</span>
+</div>
+<nav class="mt-6 px-4 space-y-2">
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary/10 text-primary font-medium transition-colors" href="#">
+<span class="material-icons text-xl">dashboard</span>
+<span>Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-icons text-xl text-gray-400">login</span>
+<span>Entrada</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-icons text-xl text-gray-400">logout</span>
+<span>Salida</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-icons text-xl text-gray-400">settings</span>
+<span>Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="p-4 border-t border-gray-100 dark:border-gray-700">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+<div class="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-xs font-bold">
+                    AD
+                </div>
+<div>
+<p class="text-sm font-medium text-gray-900 dark:text-white">Admin</p>
+<p class="text-xs text-gray-500">Gestor</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 ml-64 p-6 lg:p-12">
+<div class="max-w-7xl mx-auto space-y-8">
+<header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6">
+<div>
+<h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white uppercase">Panel de control</h1>
+<p class="text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+<span class="material-icons text-sm">school</span>
+                        Gestión de Aseos Escolares
+                    </p>
+</div>
+<div class="flex items-center gap-3 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+<span class="material-icons text-primary">schedule</span>
+<div class="text-right">
+<p class="text-sm font-semibold text-gray-900 dark:text-white leading-tight">10:42 AM</p>
+<p class="text-xs text-gray-500 dark:text-gray-400 leading-tight">Lun, Oct 24</p>
+</div>
+</div>
+</header>
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border-l-4 border-primary flex items-center justify-between">
+<div>
+<p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Usos totales hoy</p>
+<p class="text-4xl font-bold text-gray-900 dark:text-white">142</p>
+</div>
+<div class="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons text-2xl">bar_chart</span>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border-l-4 border-emerald-500 flex items-center justify-between">
+<div>
+<p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Aseos Libres Chicas</p>
+<div class="flex items-baseline gap-2">
+<p class="text-4xl font-bold text-gray-900 dark:text-white">1</p>
+<p class="text-xl text-gray-300 dark:text-gray-600">/ 2</p>
+</div>
+</div>
+<div class="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500">
+<span class="material-icons text-2xl">woman</span>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border-l-4 border-emerald-500 flex items-center justify-between">
+<div>
+<p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Aseos Libres Chicos</p>
+<div class="flex items-baseline gap-2">
+<p class="text-4xl font-bold text-gray-900 dark:text-white">1</p>
+<p class="text-xl text-gray-300 dark:text-gray-600">/ 2</p>
+</div>
+</div>
+<div class="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons text-2xl">man</span>
+</div>
+</div>
+</section>
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+<div class="relative group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-80 transition-all hover:shadow-lg">
+<div class="h-2 w-full bg-red-500"></div>
+<div class="absolute top-6 right-6 h-3 w-3 rounded-full bg-red-400 opacity-50"></div>
+<div class="p-6 flex-grow flex flex-col">
+<div class="mb-6">
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">Planta Baja Chicas</h3>
+<div class="mt-2">
+<span class="px-3 py-1 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 text-[10px] font-bold tracking-widest uppercase">Ocupado</span>
+</div>
+</div>
+<div class="mb-auto">
+<p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Estudiante</p>
+<p class="text-lg font-bold text-gray-900 dark:text-white">Sofia Garcia</p>
+<p class="text-sm text-gray-400 dark:text-gray-500">Grado 4-A</p>
+</div>
+<div class="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 p-3 rounded-xl mt-4">
+<span class="material-icons text-sm">schedule</span>
+<span class="text-sm font-bold">04:12</span>
+<span class="text-[10px] ml-auto font-medium text-red-400">Transcurrido</span>
+</div>
+</div>
+</div>
+<div class="relative group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-80 transition-all hover:shadow-lg">
+<div class="h-2 w-full bg-emerald-500"></div>
+<div class="p-6 flex-grow flex flex-col">
+<div class="w-full mb-6">
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">Planta Alta Chicas</h3>
+<div class="mt-2 text-left">
+<span class="px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 text-[10px] font-bold tracking-widest uppercase">Libre</span>
+</div>
+</div>
+<div class="flex-grow flex items-center justify-center">
+<div class="h-16 w-16 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+<span class="material-icons text-emerald-500 text-3xl">check_circle_outline</span>
+</div>
+</div>
+<button class="mt-6 w-full py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2">
+<span class="material-icons text-lg">login</span>
+                            Entrada Rápida
+                        </button>
+</div>
+</div>
+<div class="relative group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-80 transition-all hover:shadow-lg">
+<div class="h-2 w-full bg-emerald-500"></div>
+<div class="p-6 flex-grow flex flex-col">
+<div class="w-full mb-6 text-left">
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">Planta Baja Chicos</h3>
+<div class="mt-2">
+<span class="px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 text-[10px] font-bold tracking-widest uppercase">Libre</span>
+</div>
+</div>
+<div class="flex-grow flex items-center justify-center">
+<div class="h-16 w-16 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+<span class="material-icons text-emerald-500 text-3xl">check_circle_outline</span>
+</div>
+</div>
+<button class="mt-6 w-full py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2">
+<span class="material-icons text-lg">login</span>
+                            Entrada Rápida
+                        </button>
+</div>
+</div>
+<div class="relative group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-80 transition-all hover:shadow-lg">
+<div class="h-2 w-full bg-red-500"></div>
+<div class="absolute top-6 right-6 h-3 w-3 rounded-full bg-red-400 opacity-50"></div>
+<div class="p-6 flex-grow flex flex-col">
+<div class="mb-6">
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">Planta Alta Chicos</h3>
+<div class="mt-2 text-left">
+<span class="px-3 py-1 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 text-[10px] font-bold tracking-widest uppercase">Ocupado</span>
+</div>
+</div>
+<div class="mb-auto">
+<p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Estudiante</p>
+<p class="text-lg font-bold text-gray-900 dark:text-white">Liam Smith</p>
+<p class="text-sm text-gray-400 dark:text-gray-500">Grado 5-B</p>
+</div>
+<div class="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 p-3 rounded-xl mt-4">
+<span class="material-icons text-sm">schedule</span>
+<span class="text-sm font-bold">01:45</span>
+<span class="text-[10px] ml-auto font-medium text-red-400">Transcurrido</span>
+</div>
+</div>
+</div>
+</section>
+<div class="fixed bottom-8 right-8 z-10">
+<button class="bg-primary hover:bg-primary-light text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-full px-8 py-4 flex items-center gap-3 text-lg font-bold transform hover:scale-105">
+<span class="material-icons">add_task</span>
+                    Registrar Entrada
+                </button>
+</div>
+<footer class="mt-12 text-center border-t border-gray-100 dark:border-gray-800 pt-8 pb-4">
+<p class="text-xs text-gray-400 dark:text-gray-500 flex items-center justify-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Sistema Operativo • Última sincr: Ahora mismo
+                    <button class="ml-1 text-primary hover:text-primary-light transition-colors">
+<span class="material-icons text-xs align-middle">refresh</span>
+</button>
+</p>
+</footer>
+</div>
+</main>
+</div>
+
+</body></html>

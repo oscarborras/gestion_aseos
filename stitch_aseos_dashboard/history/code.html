@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Historial Sincronizado</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1313ec",
+                        "primary-light": "#4f4ff5",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101022",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='C19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display text-gray-800 dark:text-gray-100 transition-colors duration-200">
+<div class="flex min-h-screen">
+<aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full z-30 flex flex-col justify-between">
+<div>
+<div class="h-20 flex items-center px-6 border-b border-gray-100 dark:border-gray-700">
+<div class="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-icons">school</span>
+</div>
+<span class="ml-3 text-lg font-bold text-gray-900 dark:text-white">EduAseos</span>
+</div>
+<nav class="mt-6 px-4 space-y-2">
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-icons">dashboard</span>
+<span>Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-icons">login</span>
+<span>Entrada</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-icons">logout</span>
+<span>Salida</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary/10 text-primary font-medium transition-colors" href="#">
+<span class="material-icons">history</span>
+<span>Historial</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-icons">settings</span>
+<span>Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="p-4 border-t border-gray-100 dark:border-gray-700">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+<div class="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                        AD
+                    </div>
+<div>
+<p class="text-sm font-medium text-gray-900 dark:text-white">Admin</p>
+<p class="text-xs text-gray-500">Gestor</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 ml-64 p-6 lg:p-12">
+<div class="max-w-7xl mx-auto space-y-8">
+<header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 dark:border-gray-700 pb-6">
+<div>
+<h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Historial Sincronizado</h1>
+<p class="text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+<span class="material-icons text-sm">event_note</span>
+                            Registro completo de actividad de los aseos
+                        </p>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<div class="relative min-w-[160px]">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">calendar_today</span>
+<select class="w-full bg-white dark:bg-gray-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none">
+<option value="">Filtrar por fecha</option>
+<option value="today">Hoy</option>
+<option value="yesterday">Ayer</option>
+<option value="this-week">Esta semana</option>
+<option value="this-month">Este mes</option>
+</select>
+</div>
+<div class="relative min-w-[160px]">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">groups</span>
+<select class="w-full bg-white dark:bg-gray-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none">
+<option value="">Filtrar por curso</option>
+<option value="1">1º Primaria</option>
+<option value="2">2º Primaria</option>
+<option value="3">3º Primaria</option>
+<option value="4">4º Primaria</option>
+<option value="5">5º Primaria</option>
+<option value="6">6º Primaria</option>
+</select>
+</div>
+<button class="bg-primary text-white px-4 py-2 rounded-xl shadow-sm hover:bg-primary-light transition-colors text-sm font-medium flex items-center gap-2">
+<span class="material-icons text-sm">file_download</span>
+                            Exportar CSV
+                        </button>
+</div>
+</header>
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">
+<th class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">Alumno</th>
+<th class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 text-center">Curso</th>
+<th class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 text-center">Aseo</th>
+<th class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 text-center">Entrada</th>
+<th class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 text-center">Salida</th>
+<th class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 text-center">Estado</th>
+<th class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">Observaciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+<tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs">LS</div>
+<div class="ml-3">
+<div class="text-sm font-semibold text-gray-900 dark:text-white">Liam Smith</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600 dark:text-gray-400">5-B</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium text-gray-700 dark:text-gray-300">Planta Baja Chicas</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-600 dark:text-gray-400">10:42:15</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-600 dark:text-gray-400">10:46:27</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="material-symbols-outlined text-emerald-500" title="Buen estado">sentiment_satisfied</span>
+</td>
+<td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Sin incidencias.</td>
+</tr>
+<tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xs">SG</div>
+<div class="ml-3">
+<div class="text-sm font-semibold text-gray-900 dark:text-white">Sofia Garcia</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600 dark:text-gray-400">4-A</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium text-gray-700 dark:text-gray-300">Planta Alta Chicas</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-600 dark:text-gray-400">10:15:02</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-600 dark:text-gray-400">10:16:48</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="material-symbols-outlined text-amber-500" title="Estado regular">sentiment_neutral</span>
+</td>
+<td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Papel higiénico casi agotado.</td>
+</tr>
+<tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold text-xs">MJ</div>
+<div class="ml-3">
+<div class="text-sm font-semibold text-gray-900 dark:text-white">Mateo Jimenez</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600 dark:text-gray-400">2-C</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium text-gray-700 dark:text-gray-300">Planta Baja Chicos</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-600 dark:text-gray-400">09:55:10</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-600 dark:text-gray-400">10:05:33</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="material-symbols-outlined text-red-500" title="Mal estado">sentiment_very_dissatisfied</span>
+</td>
+<td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Agua en el suelo cerca del lavabo.</td>
+</tr>
+<tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs">ER</div>
+<div class="ml-3">
+<div class="text-sm font-semibold text-gray-900 dark:text-white">Elena Rodriguez</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600 dark:text-gray-400">6-A</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium text-gray-700 dark:text-gray-300">Planta Alta Chicos</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-600 dark:text-gray-400">09:30:12</td>
+<td class="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-600 dark:text-gray-400">09:34:05</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="material-symbols-outlined text-emerald-500" title="Buen estado">sentiment_satisfied</span>
+</td>
+<td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">-</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+<p class="text-sm text-gray-500 dark:text-gray-400">
+                            Mostrando <span class="font-medium">1-10</span> de <span class="font-medium">245</span> registros
+                        </p>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 transition-colors">Anterior</button>
+<button class="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 transition-colors">Siguiente</button>
+</div>
+</div>
+</div>
+<footer class="mt-12 text-center border-t border-gray-200 dark:border-gray-800 pt-8 pb-4">
+<p class="text-sm text-gray-400 dark:text-gray-500 flex items-center justify-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        Sistema de Gestión Escolar • Última actualización: hace 2 min
+                        <button class="ml-2 text-primary hover:text-primary-light transition-colors">
+<span class="material-icons text-sm align-middle">refresh</span>
+</button>
+</p>
+</footer>
+</div>
+</main>
+</div>
+
+</body></html>

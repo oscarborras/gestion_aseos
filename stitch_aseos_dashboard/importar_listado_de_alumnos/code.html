@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Importar Alumnos - Gestión de Baños</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1313ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101022",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed h-full transition-colors duration-300">
+<div class="p-6">
+<div class="flex items-center gap-3 text-primary">
+<span class="material-icons-outlined text-3xl">wc</span>
+<span class="font-bold text-xl tracking-tight">EduRest</span>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-icons-outlined">dashboard</span>
+<span class="font-medium">Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-icons-outlined">login</span>
+<span class="font-medium">Entrada</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-icons-outlined">logout</span>
+<span class="font-medium">Salida</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-icons-outlined">history</span>
+<span class="font-medium">Historial</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary transition-all" href="#">
+<span class="material-icons-outlined">group</span>
+<span class="font-medium">Alumnos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-icons-outlined">settings</span>
+<span class="font-medium">Ajustes</span>
+</a>
+</nav>
+<div class="p-4 mt-auto">
+<div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 flex items-center gap-3 border border-slate-100 dark:border-slate-700">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">JD</div>
+<div class="overflow-hidden">
+<p class="text-sm font-semibold truncate">Juan Docente</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">Admin Colegio</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 flex flex-col min-h-screen">
+<!-- Top Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between px-8">
+<div class="flex items-center gap-2">
+<a class="text-slate-400 hover:text-primary transition-colors" href="#">Alumnos</a>
+<span class="material-icons-outlined text-slate-300 text-sm">chevron_right</span>
+<span class="font-medium text-slate-900 dark:text-slate-100">Importar Listado</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500">
+<span class="material-icons-outlined">notifications</span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    Sistema Online
+                </div>
+</div>
+</header>
+<!-- Page Body -->
+<div class="p-8 max-w-5xl mx-auto w-full">
+<div class="mb-8">
+<h1 class="text-3xl font-bold text-slate-900 dark:text-slate-50">Importar Alumnos</h1>
+<p class="text-slate-500 dark:text-slate-400 mt-2">Añade rápidamente múltiples alumnos a la base de datos mediante la carga de un archivo estructurado.</p>
+</div>
+<!-- Upload Zone Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 mb-8">
+<div class="max-w-xl mx-auto">
+<div class="mb-6 p-4 rounded-lg bg-primary/5 border border-primary/20 flex gap-4 items-start">
+<span class="material-icons-outlined text-primary">info</span>
+<div>
+<p class="text-sm font-medium text-primary">Formato de archivo requerido</p>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Sube un archivo <strong class="font-semibold">CSV</strong> que contenga exactamente las siguientes columnas en la primera fila: <code class="bg-primary/10 px-1 rounded">Nombre, Apellidos, Curso</code>.</p>
+</div>
+</div>
+<div class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-12 text-center hover:border-primary dark:hover:border-primary transition-colors group cursor-pointer relative">
+<input accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" type="file"/>
+<div class="flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-all mb-4">
+<span class="material-icons-outlined text-3xl">cloud_upload</span>
+</div>
+<h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Arrastra tu archivo aquí</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-6">o utiliza el botón de abajo para buscar en tu equipo</p>
+<button class="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-medium shadow-lg shadow-primary/20 transition-all flex items-center gap-2 mx-auto">
+<span class="material-icons-outlined text-sm">attach_file</span>
+                                Seleccionar Archivo
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Preview Table Section (Visible after upload) -->
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<h2 class="text-lg font-semibold flex items-center gap-2">
+<span class="material-icons-outlined text-primary">table_view</span>
+                        Vista previa de importación
+                    </h2>
+<span class="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full border border-green-100 dark:border-green-800">
+                        128 registros detectados
+                    </span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+<th class="px-6 py-4 font-semibold">Nombre</th>
+<th class="px-6 py-4 font-semibold">Apellidos</th>
+<th class="px-6 py-4 font-semibold">Curso</th>
+<th class="px-6 py-4 font-semibold text-right">Estado</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 font-medium">Alejandro</td>
+<td class="px-6 py-4">García Martínez</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">1º ESO A</span></td>
+<td class="px-6 py-4 text-right">
+<span class="flex items-center justify-end gap-1 text-green-600">
+<span class="material-icons-outlined text-sm">check_circle</span>
+                                        Válido
+                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 font-medium">Sofía</td>
+<td class="px-6 py-4">Rodríguez Ruiz</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">2º ESO B</span></td>
+<td class="px-6 py-4 text-right">
+<span class="flex items-center justify-end gap-1 text-green-600">
+<span class="material-icons-outlined text-sm">check_circle</span>
+                                        Válido
+                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors text-slate-400">
+<td class="px-6 py-4 font-medium italic">...</td>
+<td class="px-6 py-4 italic">...</td>
+<td class="px-6 py-4 italic">...</td>
+<td class="px-6 py-4 italic text-right">Mostrando 5 de 128</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 font-medium">Mateo</td>
+<td class="px-6 py-4">Vázquez Silva</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">4º Primaria</span></td>
+<td class="px-6 py-4 text-right">
+<span class="flex items-center justify-end gap-1 text-green-600">
+<span class="material-icons-outlined text-sm">check_circle</span>
+                                        Válido
+                                    </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer Actions -->
+<div class="px-6 py-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end items-center gap-4">
+<button class="px-6 py-2.5 text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                        Cancelar
+                    </button>
+<button class="bg-primary hover:bg-primary/90 text-white px-8 py-2.5 rounded-lg font-semibold shadow-lg shadow-primary/25 transition-all flex items-center gap-2">
+<span class="material-icons-outlined">save</span>
+                        Confirmar Importación
+                    </button>
+</div>
+</div>
+<!-- Empty State Help Card -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-start gap-4">
+<div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600">
+<span class="material-icons-outlined">file_download</span>
+</div>
+<div>
+<h4 class="font-bold mb-1">Descargar Plantilla</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Utiliza nuestra plantilla base para asegurarte de que los datos tengan el formato correcto.</p>
+<a class="text-sm font-semibold text-primary hover:underline" href="#">Descargar plantilla .csv</a>
+</div>
+</div>
+<div class="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-start gap-4">
+<div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-amber-600">
+<span class="material-icons-outlined">warning_amber</span>
+</div>
+<div>
+<h4 class="font-bold mb-1">Duplicados</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-3">El sistema ignorará automáticamente a los alumnos que ya existan en la base de datos por nombre y apellido.</p>
+<a class="text-sm font-semibold text-primary hover:underline" href="#">Leer más sobre políticas</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer Info -->
+<footer class="mt-auto py-6 px-8 text-center text-xs text-slate-400 dark:text-slate-600 border-t border-slate-100 dark:border-slate-800">
+            © 2024 EduRest School Management. Todos los derechos reservados.
+        </footer>
+</main>
+<!-- Theme Toggle (Floating) -->
+<button class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-white dark:bg-slate-800 shadow-xl flex items-center justify-center border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all z-50" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-icons-outlined dark:hidden">dark_mode</span>
+<span class="material-icons-outlined hidden dark:block">light_mode</span>
+</button>
+</body></html>

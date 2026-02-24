@@ -4,7 +4,7 @@ trigger: always_on
 
 ### Stack por defecto
 
-* Framework: **Next.js (App Router)**
+* Framework: **Next.js con App Router**
 * UI: **Tailwind CSS**
 * UI Icons: **Lucide React**
 * Data: **Supabase-local**
