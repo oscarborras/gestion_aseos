@@ -176,7 +176,13 @@ export default async function DashboardPage() {
         })}
       </section>
 
-      <div className="fixed bottom-8 right-8 z-10">
+      <div className="fixed bottom-8 right-8 z-10 flex flex-col gap-4 items-end">
+        <Link href="/solicitud">
+          <button className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-amber-500/20 transition-all duration-300 rounded-full px-6 py-3 flex items-center gap-2 text-base font-bold transform hover:scale-105">
+            <Clock10 className="w-5 h-5" />
+            Pedir Turno
+          </button>
+        </Link>
         <Link href="/entrada">
           <button className="bg-primary-brand hover:bg-primary-light text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-full px-8 py-4 flex items-center gap-3 text-lg font-bold transform hover:scale-105">
             <LogIn className="w-6 h-6" />

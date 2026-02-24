@@ -228,3 +228,30 @@ export async function insertAlumnos(alumnosRaw: { nombreCompleto: string, nombre
 
     return { success: true, count: inserts.length }
 }
+
+export async function solicitarUsoAseo(alumnosIds: string[]) {
+    const supabase = await createClient()
+
+    if (!alumnosIds || alumnosIds.length === 0) {
+        return { error: 'Debe seleccionar al menos un alumno' }
+    }
+
+    const inserts = alumnosIds.map(id => ({
+        alumno_id: id,
+        estado: 'esperando'
+    }))
+
+    const { error } = await supabase
+        .from('lista_espera')
+        .insert(inserts)
+
+    if (error) {
+        console.error('Error al solicitar uso de aseo:', error)
+        return { error: 'No se pudo realizar la solicitud' }
+    }
+
+    revalidatePath('/')
+    revalidatePath('/solicitud')
+
+    return { success: true }
+}

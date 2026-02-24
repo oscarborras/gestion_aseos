@@ -44,3 +44,12 @@ CREATE TABLE public.registros (
   CONSTRAINT registros_alumno_id_fkey FOREIGN KEY (alumno_id) REFERENCES public.alumnos(id),
   CONSTRAINT registros_aseo_id_fkey FOREIGN KEY (aseo_id) REFERENCES public.aseos(id)
 );
+
+CREATE TABLE public.lista_espera (
+  id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  alumno_id uuid NOT NULL,
+  fecha_solicitud timestamp with time zone NOT NULL DEFAULT now(),
+  estado text NOT NULL DEFAULT 'esperando' CHECK (estado IN ('esperando', 'notificado', 'en_uso', 'completado', 'cancelado')),
+  CONSTRAINT lista_espera_pkey PRIMARY KEY (id),
+  CONSTRAINT lista_espera_alumno_id_fkey FOREIGN KEY (alumno_id) REFERENCES public.alumnos(id)
+);
