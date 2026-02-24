@@ -10,8 +10,30 @@ const MADRID_TZ = 'Europe/Madrid'
 export default async function DashboardPage() {
     const supabase = await createClient()
 
-    // Fetch data
+    // 1. Obtener aseos
     const { data: aseosBase } = await supabase.from('aseos').select('*, estados(nombre)')
+
+    // 2. Obtener registros activos (alumnos en el aseo ahora)
+    const { data: registrosActivos } = await supabase
+        .from('registros')
+        .select(`
+            aseo_id,
+            alumnos (
+                alumno,
+                unidad
+            )
+        `)
+        .is('fecha_salida', null)
+
+    // Agrupar alumnos por aseo
+    const alumnosPorAseo: Record<number, { nombre: string, unidad: string }[]> = {}
+    registrosActivos?.forEach((reg: any) => {
+        if (!alumnosPorAseo[reg.aseo_id]) alumnosPorAseo[reg.aseo_id] = []
+        alumnosPorAseo[reg.aseo_id].push({
+            nombre: reg.alumnos?.alumno || 'Desconocido',
+            unidad: reg.alumnos?.unidad || 'Sin curso'
+        })
+    })
 
     // Calcular el rango de hoy en la zona horaria de Madrid
     const todayStr = formatInTimeZone(new Date(), MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
@@ -26,7 +48,12 @@ export default async function DashboardPage() {
         .lt('fecha_entrada', tomorrowStr)
 
     const usosTotales = usosTotalesCount || 0
-    const aseosList = aseosBase || []
+
+    // Enriquecer la lista de aseos con los datos de los registros reales (más fiable que las columnas denormalizadas)
+    const aseosList = (aseosBase || []).map(aseo => ({
+        ...aseo,
+        estudiantesReales: alumnosPorAseo[aseo.id] || []
+    }))
 
     const chicasLibres = aseosList.filter(a => a.nombre.toLowerCase().includes('chica') && a.estado_id === 1).length
     const totalChicas = aseosList.filter(a => a.nombre.toLowerCase().includes('chica')).length
@@ -125,18 +152,14 @@ export default async function DashboardPage() {
                                         <div className="mb-auto overflow-y-auto max-h-[140px] pr-2 scrollbar-thin">
                                             <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-3">Estudiantes</p>
                                             <div className="space-y-4">
-                                                {aseo.ocupado_por?.split('; ').map((nombre: string, idx: number) => {
-                                                    const cursos = aseo.curso_alumno?.split('; ') || [];
-                                                    const curso = cursos[idx] || 'Sin curso';
-                                                    return (
-                                                        <div key={idx} className="border-l-2 border-primary-brand/30 pl-3">
-                                                            <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
-                                                                {nombre}
-                                                            </p>
-                                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{curso}</p>
-                                                        </div>
-                                                    );
-                                                })}
+                                                {aseo.estudiantesReales.map((estudiante: any, idx: number) => (
+                                                    <div key={idx} className="border-l-2 border-primary-brand/30 pl-3">
+                                                        <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                                                            {estudiante.nombre}
+                                                        </p>
+                                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{estudiante.unidad}</p>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 p-3 rounded-xl mt-4 shrink-0">

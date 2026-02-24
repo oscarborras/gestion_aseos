@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { entregarTurno } from '../actions'
+import { entregarTurno, entregarTurnoGrupo } from '../actions'
 import { User, Key, Users, CheckCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -89,15 +89,18 @@ export default function EntregarClient({
 
         setLoading(true)
 
-        // Procesar todos los alumnos seleccionados
-        const results = await Promise.all(currentStudents.map(s =>
-            entregarTurno(s.id, s.alumno_id, assignedAseo.id)
-        ))
+        // Procesar todos los alumnos seleccionados en bloque
+        const alumnosData = currentStudents.map(s => ({
+            waitingId: s.id,
+            alumnoId: s.alumno_id
+        }))
+
+        const result = await entregarTurnoGrupo(alumnosData, assignedAseo.id)
 
         setLoading(false)
 
-        if (results.some(r => r.error)) {
-            toast.error('Ocurrió un error en alguna de las entregas')
+        if (result.error) {
+            toast.error(result.error)
         } else {
             toast.success(`${currentStudents.length > 1 ? 'Llaves entregadas' : 'Llave entregada'} con éxito`)
             setAssignedWaitIds([])

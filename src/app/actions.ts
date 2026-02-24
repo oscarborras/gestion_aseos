@@ -48,25 +48,30 @@ export async function registrarEntrada(formData: FormData) {
     // Recuperar info actual del aseo para concatenar si ya tenía gente
     const { data: aseoActual } = await supabase.from('aseos').select('ocupado_por, curso_alumno').eq('id', aseoId).single()
 
-    const nuevosNombres = alumnosData.map(a => a.alumno).join('; ')
-    const nuevosCursos = alumnosData.map(a => a.unidad || 'Sin Curso').join('; ')
+    const nuevosNombresList = alumnosData.map(a => a.alumno)
+    const nuevosCursosList = alumnosData.map(a => a.unidad || 'Sin Curso')
 
-    let ocupado_por = nuevosNombres
-    let curso_alumno = nuevosCursos
+    let nombresFinales = nuevosNombresList
+    let cursosFinales = nuevosCursosList
 
     if (aseoActual?.ocupado_por) {
-        ocupado_por = `${aseoActual.ocupado_por}; ${nuevosNombres}`
-    }
-    if (aseoActual?.curso_alumno) {
-        curso_alumno = `${aseoActual.curso_alumno}; ${nuevosCursos}`
+        const nombresPrevios = aseoActual.ocupado_por.split('; ')
+        const cursosPrevios = aseoActual.curso_alumno?.split('; ') || []
+        // Filtrar para no añadir duplicados si ya estaban (por seguridad)
+        const nombresParaAnadir = nuevosNombresList.filter(n => !nombresPrevios.includes(n))
+        // Nota: esto es una simplificación, en un sistema real querríamos ser más precisos con los cursos
+        nombresFinales = [...nombresPrevios, ...nombresParaAnadir]
+        // Para los cursos, añadimos solo los que correspondan a los nombres añadidos
+        const cursosParaAnadir = nuevosCursosList.filter((c, i) => !nombresPrevios.includes(nuevosNombresList[i]))
+        cursosFinales = [...cursosPrevios, ...cursosParaAnadir]
     }
 
     const { error: updateError } = await supabase
         .from('aseos')
         .update({
             estado_id: 2, // 2 = Ocupado
-            ocupado_por,
-            curso_alumno,
+            ocupado_por: nombresFinales.join('; '),
+            curso_alumno: cursosFinales.join('; '),
             ultimo_cambio: new Date().toISOString()
         })
         .eq('id', aseoId)
@@ -123,14 +128,14 @@ export async function registrarSalida(formData: FormData) {
     const quedanAlumnos = alumnosRestantes && alumnosRestantes.length > 0;
 
     if (quedanAlumnos) {
-        // Reconstruir los strings de ocupado_por y curso_alumno
-        const nuevosNombres = alumnosRestantes.map((r: any) => r.alumnos.alumno).join(', ')
-        const nuevosCursos = alumnosRestantes.map((r: any) => r.alumnos.unidad || 'Sin Curso').join(', ')
+        // Reconstruir los strings de ocupado_por y curso_alumno usando el separador consistente '; '
+        const nombres = alumnosRestantes.map((r: any) => r.alumnos.alumno).join('; ')
+        const cursos = alumnosRestantes.map((r: any) => r.alumnos.unidad || 'Sin Curso').join('; ')
 
         await supabase.from('aseos').update({
             estado_id: 2, // Sigue ocupado
-            ocupado_por: nuevosNombres,
-            curso_alumno: nuevosCursos
+            ocupado_por: nombres,
+            curso_alumno: cursos
         }).eq('id', aseoId)
     } else {
         // Queda completamente libre
@@ -283,13 +288,31 @@ export async function entregarTurno(waitingId: number, alumnoId: string, aseoId:
 
     if (regError) return { error: 'Error al registrar entrada' }
 
-    // 4. Actualizar estado del aseo
+    // 4. Actualizar estado del aseo (Añadiendo a lo que ya hubiera)
+    const { data: aseoActual } = await supabase.from('aseos').select('ocupado_por, curso_alumno').eq('id', aseoId).single()
+
+    let ocupado_por = alumno.alumno
+    let curso_alumno = alumno.unidad || 'Sin Curso'
+
+    if (aseoActual?.ocupado_por) {
+        const nombresPrevios = aseoActual.ocupado_por.split('; ')
+        const cursosPrevios = aseoActual.curso_alumno?.split('; ') || []
+
+        if (!nombresPrevios.includes(alumno.alumno)) {
+            ocupado_por = [...nombresPrevios, alumno.alumno].join('; ')
+            curso_alumno = [...cursosPrevios, alumno.unidad || 'Sin Curso'].join('; ')
+        } else {
+            ocupado_por = aseoActual.ocupado_por
+            curso_alumno = aseoActual.curso_alumno || 'Sin Curso'
+        }
+    }
+
     const { error: aseoError } = await supabase
         .from('aseos')
         .update({
             estado_id: 2, // Ocupado
-            ocupado_por: alumno.alumno,
-            curso_alumno: alumno.unidad,
+            ocupado_por,
+            curso_alumno,
             ultimo_cambio: new Date().toISOString()
         })
         .eq('id', aseoId)
@@ -300,6 +323,22 @@ export async function entregarTurno(waitingId: number, alumnoId: string, aseoId:
     revalidatePath('/entregar')
     revalidatePath('/entrada')
     revalidatePath('/solicitud')
+    revalidatePath('/dashboard')
+
+    return { success: true }
+}
+
+export async function entregarTurnoGrupo(alumnos: { waitingId: number, alumnoId: string }[], aseoId: number) {
+    const supabase = await createClient()
+
+    // Procesar todos en una transacción o secuencialmente pero con cuidado
+    // Para simplificar y evitar fallos parciales, lo haremos uno a uno pero 
+    // al final revalidaremos todo
+
+    for (const item of alumnos) {
+        const res = await entregarTurno(item.waitingId, item.alumnoId, aseoId)
+        if (res.error) return { error: res.error as string }
+    }
 
     return { success: true }
 }
