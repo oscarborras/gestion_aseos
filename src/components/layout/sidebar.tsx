@@ -9,7 +9,7 @@ const routes = [
     {
         label: 'Pedir Turno',
         icon: Clock10,
-        href: '/solicitud',
+        href: '/',
         color: 'text-amber-500',
         activeColor: 'bg-amber-500/10 text-amber-500',
     },
@@ -30,9 +30,9 @@ const routes = [
     {
         label: 'Panel de Control',
         icon: LayoutDashboard,
-        href: '/',
-        color: 'text-primary-brand',
-        activeColor: 'bg-primary-brand/10 text-primary-brand',
+        href: '/dashboard',
+        color: 'text-indigo-500',
+        activeColor: 'bg-indigo-500/10 text-indigo-500',
     },
     {
         label: 'Entrada',

@@ -1,19 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { solicitarUsoAseo } from '../actions'
-import { GraduationCap, Search, CheckCircle, ChevronRight, UserPlus } from 'lucide-react'
+import { solicitarUsoAseo } from '@/app/actions'
+import { CheckCircle, UserPlus, ChevronRight, Search, GraduationCap } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
 export default function SolicitudClient({
     unidades,
     alumnos,
-    initialWaitingList = []
+    initialWaitingList = [],
+    excludeIds = []
 }: {
     unidades: string[],
     alumnos: any[],
-    initialWaitingList?: { alumno_id: string, sexo: string }[]
+    initialWaitingList?: { alumno_id: string, sexo: string }[],
+    excludeIds?: string[]
 }) {
     const router = useRouter()
     const [step, setStep] = useState(1) // 1: Botón, 2: Selección
@@ -51,6 +53,9 @@ export default function SolicitudClient({
         text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
 
     const alumnosFiltrados = alumnos.filter(a => {
+        // Excluir alumnos que ya están en lista o en uso
+        if (excludeIds.includes(a.id)) return false
+
         const matchesCurso = !selectedCurso || a.unidad === selectedCurso
         let matchesSearch = true
         if (searchQuery) {
@@ -80,7 +85,11 @@ export default function SolicitudClient({
             toast.error(result.error)
         } else {
             toast.success('Solicitud enviada a la lista de espera')
-            router.push('/')
+            setStep(1)
+            setSelectedAlumnos([])
+            setSelectedCurso('')
+            setSearchQuery('')
+            router.refresh()
         }
     }
 
@@ -108,26 +117,16 @@ export default function SolicitudClient({
 
         return (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setStep(1)}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-                        >
-                            <ChevronRight className="w-6 h-6 rotate-180 text-slate-400" />
-                        </button>
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">¿Quién eres?</h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                Filtrar por Unidad / Curso
+                            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider ml-1">
+                                1. Selecciona tu curso
                             </label>
-                            <div className="relative">
-                                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
+                            <div className="relative group">
+                                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 transition-colors group-focus-within:text-primary-brand" />
                                 <select
-                                    className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-brand focus:border-primary-brand outline-none transition-all dark:text-white"
+                                    className="w-full pl-12 pr-10 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary-brand/10 focus:border-primary-brand outline-none transition-all appearance-none cursor-pointer font-medium"
                                     value={selectedCurso}
                                     onChange={(e) => setSelectedCurso(e.target.value)}
                                 >
@@ -136,18 +135,21 @@ export default function SolicitudClient({
                                         <option key={u} value={u}>{u}</option>
                                     ))}
                                 </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                    <ChevronRight className="w-5 h-5 rotate-90" />
+                                </div>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                Buscar por Nombre
+                            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider ml-1">
+                                2. Busca tu nombre
                             </label>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
+                            <div className="relative group">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 transition-colors group-focus-within:text-primary-brand" />
                                 <input
                                     type="text"
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-brand focus:border-primary-brand outline-none transition-all dark:text-white placeholder:text-slate-400"
+                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary-brand/10 focus:border-primary-brand outline-none transition-all placeholder:text-slate-400 font-medium"
                                     placeholder="Escribe tu nombre..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,52 +158,50 @@ export default function SolicitudClient({
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl max-h-72 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {alumnosFiltrados.length === 0 ? (
-                            <div className="p-8 text-sm text-slate-500 col-span-2 text-center flex flex-col items-center gap-2">
-                                <Search className="w-8 h-8 text-slate-300" />
-                                No se han encontrado alumnos con ese nombre o curso.
+                    <div className="relative">
+                        <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-700/50 rounded-3xl overflow-hidden">
+                            <div className="p-4 border-b border-slate-100 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                    Resultados ({alumnosFiltrados.length})
+                                </span>
                             </div>
-                        ) : (
-                            alumnosFiltrados.map(alumno => {
-                                const checked = selectedAlumnos.includes(alumno.id)
-                                return (
-                                    <label
-                                        key={alumno.id}
-                                        className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all duration-200 ${checked ? 'border-primary-brand bg-primary-brand/5 shadow-md shadow-primary-brand/5' : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-700/50'}`}
-                                    >
-                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${checked ? 'bg-primary-brand border-primary-brand' : 'border-slate-300 dark:border-slate-600'}`}>
-                                            {checked && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
-                                        </div>
-                                        <input
-                                            type="radio"
-                                            name="alumno-seleccion"
-                                            className="hidden"
-                                            checked={checked}
-                                            onChange={() => handleAlumnoToggle(alumno.id)}
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{alumno.alumno}</span>
-                                            <span className="text-xs font-medium text-slate-500">{alumno.unidad}</span>
-                                        </div>
-                                    </label>
-                                )
-                            })
-                        )}
+                            <div className="max-h-80 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 custom-scrollbar">
+                                {alumnosFiltrados.length === 0 ? (
+                                    <div className="p-8 text-sm text-slate-500 col-span-2 text-center flex flex-col items-center gap-2">
+                                        <Search className="w-8 h-8 text-slate-300" />
+                                        No se han encontrado alumnos con ese nombre o curso.
+                                    </div>
+                                ) : (
+                                    alumnosFiltrados.map(alumno => {
+                                        const checked = selectedAlumnos.includes(alumno.id)
+                                        return (
+                                            <label
+                                                key={alumno.id}
+                                                className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all duration-200 ${checked ? 'border-primary-brand bg-primary-brand/5 shadow-md shadow-primary-brand/5' : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-700/50'}`}
+                                            >
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${checked ? 'bg-primary-brand border-primary-brand' : 'border-slate-300 dark:border-slate-600'}`}>
+                                                    {checked && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+                                                </div>
+                                                <input
+                                                    type="radio"
+                                                    name="alumno-seleccion"
+                                                    className="hidden"
+                                                    checked={checked}
+                                                    onChange={() => handleAlumnoToggle(alumno.id)}
+                                                />
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-slate-900 dark:text-slate-100">{alumno.alumno}</span>
+                                                    <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{alumno.unidad}</span>
+                                                </div>
+                                            </label>
+                                        )
+                                    })
+                                )}
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div className="pt-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                    <p className="text-sm text-slate-500">
-                        {selectedAlumnos.length > 0 ? (
-                            <span className="font-medium text-primary-brand">
-                                Alumno seleccionado
-                            </span>
-                        ) : (
-                            'Busca y selecciona tu nombre de la lista'
-                        )}
-                    </p>
-                    <div className="flex gap-4 w-full sm:w-auto">
+                    <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-end border-t border-slate-50 dark:border-slate-800">
                         <button
                             type="button"
                             onClick={() => setStep(1)}
