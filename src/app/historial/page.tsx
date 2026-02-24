@@ -1,42 +1,85 @@
 import { createClient } from '@/utils/supabase/server'
-import { CalendarDays, Download, Smile, Meh, Frown, Users } from 'lucide-react'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { formatInTimeZone } from 'date-fns-tz'
+import { CalendarDays, Smile, Meh, Frown } from 'lucide-react'
+import { format, startOfDay, endOfDay, startOfWeek, startOfMonth, addDays } from 'date-fns'
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
+import HistorialFilters from './HistorialFilters'
+import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
 
 const MADRID_TZ = 'Europe/Madrid'
 
-export default async function HistorialPage() {
+export default async function HistorialPage(props: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    const searchParams = await props.searchParams
     const supabase = await createClient()
 
-    // Calcular el rango de hoy en la zona horaria de Madrid
-    const todayStr = formatInTimeZone(new Date(), MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
-    const tomorrowDate = new Date()
-    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
-    const tomorrowStr = formatInTimeZone(tomorrowDate, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+    const fechaFilter = (searchParams.fecha as string) || 'today'
+    const cursoFilter = (searchParams.curso as string) || ''
+    const aseoFilter = (searchParams.aseo as string) || ''
 
-    // Fetch finished records for today
-    const { data: registros } = await supabase
+    // Determinar el rango de fechas para la consulta
+    let dateGte: string | null = null
+    let dateLt: string | null = null
+
+    const now = new Date()
+    const zonedNow = toZonedTime(now, MADRID_TZ)
+
+    if (fechaFilter === 'today') {
+        const start = startOfDay(zonedNow)
+        dateGte = formatInTimeZone(start, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+        dateLt = formatInTimeZone(addDays(start, 1), MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+    } else if (fechaFilter === 'yesterday') {
+        const yesterday = addDays(startOfDay(zonedNow), -1)
+        dateGte = formatInTimeZone(yesterday, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+        dateLt = formatInTimeZone(addDays(yesterday, 1), MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+    } else if (fechaFilter === 'this-week') {
+        const weekStart = startOfWeek(zonedNow, { weekStartsOn: 1 })
+        dateGte = formatInTimeZone(weekStart, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+    } else if (fechaFilter === 'this-month') {
+        const monthStart = startOfMonth(zonedNow)
+        dateGte = formatInTimeZone(monthStart, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+    }
+
+    // Usar !inner si queremos que el filtro por curso afecte a los resultados de registros
+    const selectQuery = `
+        id,
+        fecha_entrada,
+        fecha_salida,
+        estado_salida,
+        observaciones_salida,
+        aseos${aseoFilter ? '!inner' : ''} ( nombre ),
+        alumnos${cursoFilter ? '!inner' : ''} ( alumno, unidad )
+    `
+
+    let query = supabase
         .from('registros')
-        .select(`
-      id,
-      fecha_entrada,
-      fecha_salida,
-      estado_salida,
-      observaciones_salida,
-      aseos ( nombre ),
-      alumnos ( alumno, unidad )
-    `)
+        .select(selectQuery)
         .not('fecha_salida', 'is', null)
-        .gte('fecha_entrada', todayStr)
-        .lt('fecha_entrada', tomorrowStr)
-        .order('fecha_salida', { ascending: false })
+
+    if (dateGte) query = query.gte('fecha_entrada', dateGte)
+    if (dateLt) query = query.lt('fecha_entrada', dateLt)
+
+    if (cursoFilter) {
+        // En Supabase, filtrar por una columna de una tabla unida se hace con 'tabla.columna'
+        query = query.ilike('alumnos.unidad', `%${cursoFilter}%`)
+    }
+
+    if (aseoFilter) {
+        query = query.eq('aseos.nombre', aseoFilter)
+    }
+
+    const { data: registros, error } = await query.order('fecha_salida', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching historial:', error)
+    }
 
     const getInitials = (name: string) => {
         return name
-            .split(' ')
+            .split(/[ ,]+/) // Split by space or comma
+            .filter(n => n.length > 0 && !n.endsWith('.'))
             .slice(0, 2)
             .map((n) => n[0])
             .join('')
@@ -56,8 +99,7 @@ export default async function HistorialPage() {
         }
     }
 
-    const getRandomColorClass = (id: number) => {
-        // Array of Tailwind color classes for the avatar backgrounds
+    const getRandomColorClass = (id: any) => {
         const colors = [
             'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
             'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
@@ -65,7 +107,13 @@ export default async function HistorialPage() {
             'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
             'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400',
         ]
-        return colors[id % colors.length]
+        let index = 0
+        if (typeof id === 'number') {
+            index = id
+        } else if (typeof id === 'string') {
+            index = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+        }
+        return colors[index % colors.length]
     }
 
     return (
@@ -74,45 +122,29 @@ export default async function HistorialPage() {
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                        Historial Sincronizado
+                        Historial de Registros
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+                    <div className="text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-2 text-sm">
                         <CalendarDays className="w-4 h-4" />
-                        Registro completo de actividad de los aseos
-                    </p>
+                        <span>Mostrando:</span>
+                        <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-primary-brand font-bold">
+                            {fechaFilter === 'today' ? 'Hoy' :
+                                fechaFilter === 'yesterday' ? 'Ayer' :
+                                    fechaFilter === 'this-week' ? 'Esta semana' :
+                                        fechaFilter === 'this-month' ? 'Este mes' : 'Todo'}
+                        </span>
+                        {cursoFilter && (
+                            <>
+                                <span>en</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-primary-brand font-bold">{cursoFilter}</span>
+                            </>
+                        )}
+                    </div>
                 </div>
 
-                {/* Filtros Simples y Exportación */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="relative min-w-[160px]">
-                        <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        <select className="w-full bg-white dark:bg-slate-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none">
-                            <option value="">Filtrar por fecha</option>
-                            <option value="today">Hoy</option>
-                            <option value="yesterday">Ayer</option>
-                            <option value="this-week">Esta semana</option>
-                            <option value="this-month">Este mes</option>
-                        </select>
-                    </div>
-
-                    <div className="relative min-w-[160px]">
-                        <Users className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        <select className="w-full bg-white dark:bg-slate-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none">
-                            <option value="">Filtrar por curso</option>
-                            <option value="1">1º ESO</option>
-                            <option value="2">2º ESO</option>
-                            <option value="3">3º ESO</option>
-                            <option value="4">4º ESO</option>
-                            <option value="5">1º Bach</option>
-                            <option value="6">2º Bach</option>
-                        </select>
-                    </div>
-
-                    <button className="bg-primary-brand text-white px-4 py-2 rounded-xl shadow-sm hover:bg-primary-light transition-colors text-sm font-medium flex items-center gap-2">
-                        <Download className="w-4 h-4" />
-                        Exportar CSV
-                    </button>
-                </div>
+                <Suspense fallback={<div className="h-10 w-64 bg-slate-100 animate-pulse rounded-xl" />}>
+                    <HistorialFilters />
+                </Suspense>
             </header>
 
             {/* Tabla */}
@@ -126,21 +158,32 @@ export default async function HistorialPage() {
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Aseo</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Entrada</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Salida</th>
+                                <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Duración</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Estado</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700">Observaciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                            {registros?.length === 0 ? (
+                            {!registros || registros.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
-                                        No hay registros en el historial.
+                                    <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <CalendarDays className="w-10 h-10 opacity-20" />
+                                            <p>No se encontraron registros con los filtros seleccionados.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
-                                registros?.map((registro: any) => {
+                                registros.map((registro: any) => {
                                     const entrada = new Date(registro.fecha_entrada)
                                     const salida = new Date(registro.fecha_salida)
+
+                                    // Calcular duración en minutos y segundos
+                                    const diffMs = salida.getTime() - entrada.getTime()
+                                    const diffSecs = Math.floor(diffMs / 1000)
+                                    const mins = Math.floor(diffSecs / 60)
+                                    const secs = diffSecs % 60
+                                    const duracion = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`
 
                                     return (
                                         <tr key={registro.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
@@ -170,6 +213,9 @@ export default async function HistorialPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-slate-600 dark:text-slate-400">
                                                 {format(salida, 'HH:mm:ss')}
                                             </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-primary-brand dark:text-primary-light">
+                                                {duracion}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 {getEstadoIcon(registro.estado_salida)}
                                             </td>
@@ -184,16 +230,12 @@ export default async function HistorialPage() {
                     </table>
                 </div>
 
-                {/* Paginación simple (Visual) */}
+                {/* Resumen */}
                 {(registros?.length || 0) > 0 && (
                     <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                            Mostrando <span className="font-medium">1-{registros?.length}</span> de los últimos registros
+                            Mostrando <span className="font-medium text-slate-900 dark:text-white">{registros?.length}</span> registros en total
                         </p>
-                        <div className="flex gap-2">
-                            <button disabled className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-400 transition-colors disabled:opacity-50">Anterior</button>
-                            <button disabled className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-400 transition-colors disabled:opacity-50">Siguiente</button>
-                        </div>
                     </div>
                 )}
             </div>

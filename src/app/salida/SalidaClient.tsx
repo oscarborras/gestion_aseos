@@ -52,7 +52,7 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
                     </span>
                 </div>
 
-                <div className="flex-grow overflow-y-auto space-y-4 pr-2 pb-24 md:pb-0">
+                <div className="flex-grow overflow-y-auto space-y-4 px-2 pb-24 md:pb-0">
                     {registros.length === 0 ? (
                         <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-xl text-center border border-dashed border-slate-200 dark:border-slate-700">
                             <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
