@@ -21,7 +21,14 @@ const routes = [
         activeColor: 'bg-emerald-500/10 text-emerald-500',
     },
     {
-        label: 'Inicio',
+        label: 'Devolver llave',
+        icon: LogOut,
+        href: '/salida',
+        color: 'text-rose-500',
+        activeColor: 'bg-rose-500/10 text-rose-500',
+    },
+    {
+        label: 'Panel de Control',
         icon: LayoutDashboard,
         href: '/',
         color: 'text-primary-brand',
@@ -31,11 +38,6 @@ const routes = [
         label: 'Entrada',
         icon: LogIn,
         href: '/entrada',
-    },
-    {
-        label: 'Salida',
-        icon: LogOut,
-        href: '/salida',
     },
     {
         label: 'Historial',
@@ -104,8 +106,25 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                                     href={route.href}
                                     key={route.href}
                                     className={cn(
-                                        'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-4',
+                                        'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-2',
                                         'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
+                                    )}
+                                >
+                                    <route.icon className="w-5 h-5" />
+                                    <span>{route.label}</span>
+                                </Link>
+                            )
+                        }
+
+                        // Diseño especial para "Devolver llave"
+                        if (route.label === 'Devolver llave') {
+                            return (
+                                <Link
+                                    href={route.href}
+                                    key={route.href}
+                                    className={cn(
+                                        'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-4',
+                                        'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
                                     )}
                                 >
                                     <route.icon className="w-5 h-5" />
