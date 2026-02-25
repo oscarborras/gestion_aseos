@@ -7,7 +7,7 @@ const PERMISSIONS: Record<string, Role[]> = {
     '/': ['Admin', 'Directiva', 'Public'],
     '/entregar': ['Admin', 'Directiva', 'Ordenanza'],
     '/salida': ['Admin', 'Directiva', 'Ordenanza', 'Public'],
-    '/dashboard': ['Admin', 'Directiva'],
+    '/dashboard': ['Admin', 'Directiva', 'Ordenanza'],
     '/entrada': ['Admin', 'Directiva'],
     '/historial': ['Admin', 'Directiva'],
     '/mantenimiento': ['Admin', 'Directiva'],

@@ -36,7 +36,7 @@ const routes = [
         href: '/dashboard',
         color: 'text-indigo-500',
         activeColor: 'bg-indigo-500/10 text-indigo-500',
-        roles: ['Admin', 'Directiva']
+        roles: ['Admin', 'Directiva', 'Ordenanza']
     },
     {
         label: 'Entrada',
