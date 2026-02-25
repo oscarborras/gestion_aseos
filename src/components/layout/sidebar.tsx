@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History, Clock10, Key, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History, Clock10, Key, ShieldCheck, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const routes = [
@@ -57,6 +57,12 @@ const routes = [
         roles: ['Admin', 'Directiva']
     },
     {
+        label: 'Lista de Espera',
+        icon: Users,
+        href: '/lista-espera',
+        roles: ['Admin', 'Directiva', 'Profesor']
+    },
+    {
         label: 'Usuarios',
         icon: ShieldCheck,
         href: '/mantenimiento/usuarios',
@@ -64,7 +70,7 @@ const routes = [
     },
     {
         label: 'Importar',
-        icon: Users,
+        icon: UserPlus,
         href: '/alumnos/importar',
         roles: ['Admin']
     }
@@ -84,7 +90,7 @@ export function Sidebar({ roles = [], user }: { roles?: string[], user?: any }) 
             <div>
                 <div className="h-24 flex items-center px-6 border-b border-gray-100 dark:border-gray-700 gap-3">
                     <div className="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100/50 dark:border-indigo-500/20">
-                        <GraduationCap className="w-7 h-7" />
+                        < GraduationCap className="w-7 h-7" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">Aseos</span>

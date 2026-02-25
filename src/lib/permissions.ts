@@ -13,6 +13,7 @@ const PERMISSIONS: Record<string, Role[]> = {
     '/mantenimiento': ['Admin', 'Directiva'],
     '/alumnos/importar': ['Admin'],
     '/mantenimiento/usuarios': ['Admin'],
+    '/lista-espera': ['Admin', 'Directiva', 'Profesor'],
 };
 
 export async function checkPermission(path: keyof typeof PERMISSIONS) {
