@@ -12,6 +12,7 @@ const PERMISSIONS: Record<string, Role[]> = {
     '/historial': ['Admin', 'Directiva'],
     '/mantenimiento': ['Admin', 'Directiva'],
     '/alumnos/importar': ['Admin'],
+    '/mantenimiento/usuarios': ['Admin'],
 };
 
 export async function checkPermission(path: keyof typeof PERMISSIONS) {

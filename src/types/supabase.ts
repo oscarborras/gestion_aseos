@@ -282,7 +282,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_all_users: {
+        Args: Record<string, never>
+        Returns: {
+          id: string
+          email: string
+          full_name: string | null
+          created_at: string
+          last_sign_in_at: string | null
+        }[]
+      }
+      is_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History, Clock10, Key } from 'lucide-react'
+import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History, Clock10, Key, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const routes = [
@@ -55,6 +55,12 @@ const routes = [
         icon: Settings,
         href: '/mantenimiento',
         roles: ['Admin', 'Directiva']
+    },
+    {
+        label: 'Usuarios',
+        icon: ShieldCheck,
+        href: '/mantenimiento/usuarios',
+        roles: ['Admin']
     },
     {
         label: 'Importar',
