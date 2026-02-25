@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { entregarTurno, entregarTurnoGrupo, anularTurno } from '../actions'
-import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle } from 'lucide-react'
+import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -203,28 +203,40 @@ export default function EntregarClient({
 
                             {firstMatch && assignedAseo ? (
                                 <div className="space-y-6 flex-grow flex flex-col">
-                                    <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 space-y-4">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-10 h-10 bg-primary-brand/10 rounded-full flex items-center justify-center border border-primary-brand/20 shrink-0">
-                                                <CheckCircle className="w-5 h-5 text-primary-brand" />
+                                    <div className="rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 overflow-hidden shadow-lg shadow-amber-500/10">
+                                        {/* Sección Aseo Destino - AHORA MÁS DESTACADA */}
+                                        <div className="p-6 bg-amber-50 dark:bg-amber-900/40 border-b-2 border-amber-100 dark:border-amber-900/30 relative">
+                                            <div className="absolute top-4 right-4">
+                                                <div className="animate-pulse w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]" />
                                             </div>
-                                            <div>
-                                                <p className="text-xs font-bold text-slate-400 uppercase">Aseo Destino</p>
-                                                <p className="font-bold text-slate-900 dark:text-white text-lg leading-tight">{assignedAseo.nombre}</p>
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-12 h-10 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center shadow-md shrink-0 transform rotate-1 border-2 border-amber-500">
+                                                    <span className="text-[16px] font-black text-amber-600 dark:text-amber-500 leading-none tracking-tighter">WC</span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-[0.2em]">Aseo Asignado</p>
+                                                    <p className="font-extrabold text-slate-900 dark:text-white text-1xl leading-none tracking-tight">{assignedAseo.nombre}</p>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700">
-                                            <p className="text-xs font-bold text-slate-400 uppercase">Alumnos/as ({currentStudents.length})</p>
-                                            <div className="space-y-3">
+                                        {/* Sección Alumnos */}
+                                        <div className="p-6 bg-white dark:bg-slate-900/40 space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Alumnos/as</p>
+                                                <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                                                    {currentStudents.length} {currentStudents.length === 1 ? 'persona' : 'personas'}
+                                                </span>
+                                            </div>
+                                            <div className="space-y-4">
                                                 {currentStudents.map((s) => (
-                                                    <div key={s.id} className="flex items-start gap-4">
-                                                        <div className="w-10 h-10 bg-white dark:bg-slate-700 rounded-full flex items-center justify-center border border-slate-100 dark:border-slate-600 shrink-0">
+                                                    <div key={s.id} className="flex items-center gap-4 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                                        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-700 shrink-0">
                                                             <User className="w-5 h-5 text-slate-400" />
                                                         </div>
                                                         <div>
                                                             <p className="font-bold text-slate-900 dark:text-white text-base leading-tight">{s.nombre}</p>
-                                                            <p className="text-xs text-slate-500">{s.unidad}</p>
+                                                            <p className="text-xs text-slate-500 font-bold">{s.unidad}</p>
                                                         </div>
                                                     </div>
                                                 ))}
