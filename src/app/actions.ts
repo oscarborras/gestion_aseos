@@ -101,7 +101,14 @@ export async function registrarSalida(formData: FormData) {
     const registroId = parseInt(registroIdStr, 10)
     const aseoId = parseInt(aseoIdStr, 10)
 
-    // 1. Actualizar el registro actual marcando la salida
+    // 1. Obtener el alumno_id del registro para luego limpiar la lista de espera
+    const { data: registroActual } = await supabase
+        .from('registros')
+        .select('alumno_id')
+        .eq('id', registroId)
+        .single()
+
+    // 2. Actualizar el registro actual marcando la salida
     const { error: updateRegistroError } = await supabase
         .from('registros')
         .update({
@@ -115,7 +122,16 @@ export async function registrarSalida(formData: FormData) {
         return { error: 'Error al registrar la salida' }
     }
 
-    // 2. Comprobar cuántos alumnos quedan en ese aseo
+    // 3. Eliminar al alumno de la lista de espera para que pueda volver a pedir turno
+    if (registroActual?.alumno_id) {
+        await supabase
+            .from('lista_espera')
+            .delete()
+            .eq('alumno_id', registroActual.alumno_id)
+            .in('estado', ['en_uso', 'notificado'])
+    }
+
+    // 4. Comprobar cuántos alumnos quedan en ese aseo
     const { data: alumnosRestantes } = await supabase
         .from('registros')
         .select(`

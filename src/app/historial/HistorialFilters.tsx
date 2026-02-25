@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CalendarDays, Users, Download, HelpCircle } from 'lucide-react'
+import { CalendarDays, Users, Download, HelpCircle, ListFilter } from 'lucide-react'
 
 export default function HistorialFilters() {
     const router = useRouter()
@@ -10,6 +10,7 @@ export default function HistorialFilters() {
     const fecha = searchParams.get('fecha') || 'today'
     const curso = searchParams.get('curso') || ''
     const aseo = searchParams.get('aseo') || ''
+    const pageSize = searchParams.get('pageSize') || '10'
 
     const handleFilterChange = (key: string, value: string) => {
         const params = new URLSearchParams(searchParams.toString())
@@ -18,6 +19,8 @@ export default function HistorialFilters() {
         } else {
             params.delete(key)
         }
+        // Al cambiar cualquier filtro (que no sea página), volver a la página 1
+        if (key !== 'page') params.set('page', '1')
         router.push(`/historial?${params.toString()}`)
     }
 
@@ -69,6 +72,20 @@ export default function HistorialFilters() {
                     <option value="Planta Baja Chicos">Planta Baja Chicos</option>
                     <option value="Planta Alta Chicas">Planta Alta Chicas</option>
                     <option value="Planta Alta Chicos">Planta Alta Chicos</option>
+                </select>
+            </div>
+
+            {/* Selector de registros por página */}
+            <div className="relative min-w-[130px]">
+                <ListFilter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <select
+                    value={pageSize}
+                    onChange={(e) => handleFilterChange('pageSize', e.target.value)}
+                    className="w-full bg-white dark:bg-slate-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none cursor-pointer"
+                >
+                    <option value="10">10 por página</option>
+                    <option value="25">25 por página</option>
+                    <option value="50">50 por página</option>
                 </select>
             </div>
 

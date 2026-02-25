@@ -21,6 +21,10 @@ export default async function HistorialPage(props: {
     const fechaFilter = (searchParams.fecha as string) || 'today'
     const cursoFilter = (searchParams.curso as string) || ''
     const aseoFilter = (searchParams.aseo as string) || ''
+    const page = Math.max(1, parseInt((searchParams.page as string) || '1', 10))
+    const pageSize = [10, 25, 50].includes(parseInt((searchParams.pageSize as string) || '10', 10))
+        ? parseInt((searchParams.pageSize as string) || '10', 10)
+        : 10
 
     // Determinar el rango de fechas para la consulta
     let dateGte: string | null = null
@@ -56,6 +60,31 @@ export default async function HistorialPage(props: {
         alumnos${cursoFilter ? '!inner' : ''} ( alumno, unidad )
     `
 
+    // Query para contar el total de registros (sin paginar)
+    const selectQueryCount = `
+        id,
+        fecha_salida,
+        aseos${aseoFilter ? '!inner' : ''} ( nombre ),
+        alumnos${cursoFilter ? '!inner' : ''} ( unidad )
+    `
+    let countQuery = supabase
+        .from('registros')
+        .select(selectQueryCount, { count: 'exact', head: true })
+        .not('fecha_salida', 'is', null)
+
+    if (dateGte) countQuery = countQuery.gte('fecha_entrada', dateGte)
+    if (dateLt) countQuery = countQuery.lt('fecha_entrada', dateLt)
+    if (cursoFilter) countQuery = countQuery.ilike('alumnos.unidad', `%${cursoFilter}%`)
+    if (aseoFilter) countQuery = countQuery.eq('aseos.nombre', aseoFilter)
+
+    const { count: totalCount } = await countQuery
+    const totalRegistros = totalCount || 0
+    const totalPages = Math.max(1, Math.ceil(totalRegistros / pageSize))
+    const currentPage = Math.min(page, totalPages)
+    const rangeFrom = (currentPage - 1) * pageSize
+    const rangeTo = rangeFrom + pageSize - 1
+
+    // Query paginada
     let query = supabase
         .from('registros')
         .select(selectQuery)
@@ -73,7 +102,9 @@ export default async function HistorialPage(props: {
         query = query.eq('aseos.nombre', aseoFilter)
     }
 
-    const { data: registros, error } = await query.order('fecha_salida', { ascending: false })
+    const { data: registros, error } = await query
+        .order('fecha_salida', { ascending: false })
+        .range(rangeFrom, rangeTo)
 
     if (error) {
         console.error('Error fetching historial:', error)
@@ -233,14 +264,58 @@ export default async function HistorialPage(props: {
                     </table>
                 </div>
 
-                {/* Resumen */}
-                {(registros?.length || 0) > 0 && (
-                    <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                            Mostrando <span className="font-medium text-slate-900 dark:text-white">{registros?.length}</span> registros en total
-                        </p>
-                    </div>
-                )}
+                {/* Footer con paginación */}
+                <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* Info de registros */}
+                    <p className="text-sm text-slate-500 dark:text-slate-400 order-2 sm:order-1">
+                        {totalRegistros === 0 ? 'Sin registros' : (
+                            <>Mostrando <span className="font-medium text-slate-900 dark:text-white">{rangeFrom + 1}–{Math.min(rangeTo + 1, totalRegistros)}</span> de <span className="font-medium text-slate-900 dark:text-white">{totalRegistros}</span> registros</>
+                        )}
+                    </p>
+
+                    {/* Controles de paginación */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center gap-1 order-1 sm:order-2">
+                            {/* Primera página */}
+                            <a
+                                href={`/historial?${new URLSearchParams({ ...Object.fromEntries(Object.entries(searchParams).filter(([, v]) => v !== undefined) as [string, string][]), page: '1', pageSize: String(pageSize) }).toString()}`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed pointer-events-none' : 'text-slate-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700'}`}
+                            >«</a>
+                            {/* Página anterior */}
+                            <a
+                                href={`/historial?${new URLSearchParams({ ...Object.fromEntries(Object.entries(searchParams).filter(([, v]) => v !== undefined) as [string, string][]), page: String(currentPage - 1), pageSize: String(pageSize) }).toString()}`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed pointer-events-none' : 'text-slate-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700'}`}
+                            >‹</a>
+
+                            {/* Páginas numeradas (máx 5) */}
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                const half = Math.floor(Math.min(5, totalPages) / 2)
+                                let startPage = Math.max(1, currentPage - half)
+                                const endPage = Math.min(totalPages, startPage + Math.min(5, totalPages) - 1)
+                                if (endPage - startPage < Math.min(5, totalPages) - 1) startPage = Math.max(1, endPage - Math.min(5, totalPages) + 1)
+                                const p = startPage + i
+                                return p <= totalPages ? (
+                                    <a
+                                        key={p}
+                                        href={`/historial?${new URLSearchParams({ ...Object.fromEntries(Object.entries(searchParams).filter(([, v]) => v !== undefined) as [string, string][]), page: String(p), pageSize: String(pageSize) }).toString()}`}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${p === currentPage ? 'bg-primary-brand text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700'}`}
+                                    >{p}</a>
+                                ) : null
+                            })}
+
+                            {/* Página siguiente */}
+                            <a
+                                href={`/historial?${new URLSearchParams({ ...Object.fromEntries(Object.entries(searchParams).filter(([, v]) => v !== undefined) as [string, string][]), page: String(currentPage + 1), pageSize: String(pageSize) }).toString()}`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${currentPage === totalPages ? 'text-slate-300 cursor-not-allowed pointer-events-none' : 'text-slate-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700'}`}
+                            >›</a>
+                            {/* Última página */}
+                            <a
+                                href={`/historial?${new URLSearchParams({ ...Object.fromEntries(Object.entries(searchParams).filter(([, v]) => v !== undefined) as [string, string][]), page: String(totalPages), pageSize: String(pageSize) }).toString()}`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${currentPage === totalPages ? 'text-slate-300 cursor-not-allowed pointer-events-none' : 'text-slate-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700'}`}
+                            >»</a>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )
