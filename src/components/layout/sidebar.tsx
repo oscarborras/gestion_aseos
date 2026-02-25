@@ -60,6 +60,7 @@ const routes = [
         label: 'Lista de Espera',
         icon: Users,
         href: '/lista-espera',
+        color: 'text-indigo-500',
         roles: ['Admin', 'Directiva', 'Profesor']
     },
     {
@@ -148,6 +149,23 @@ export function Sidebar({ roles = [], user }: { roles?: string[], user?: any }) 
                                     className={cn(
                                         'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-4',
                                         'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
+                                    )}
+                                >
+                                    <route.icon className="w-5 h-5" />
+                                    <span>{route.label}</span>
+                                </Link>
+                            )
+                        }
+
+                        // Diseño especial para "Lista de Espera"
+                        if (route.label === 'Lista de Espera') {
+                            return (
+                                <Link
+                                    href={route.href}
+                                    key={route.href}
+                                    className={cn(
+                                        'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-2',
+                                        'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
                                     )}
                                 >
                                     <route.icon className="w-5 h-5" />
