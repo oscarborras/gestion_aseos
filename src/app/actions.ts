@@ -252,6 +252,68 @@ export async function insertAlumnos(alumnosRaw: { nombreCompleto: string, nombre
     return { success: true, count: inserts.length }
 }
 
+export async function anularTurno(waitingId: number) {
+    const supabase = await createClient()
+
+    // 1. Obtener los datos completos del turno y del alumno antes de borrarlo
+    const { data: turno, error: fetchError } = await supabase
+        .from('lista_espera')
+        .select(`
+            id,
+            alumno_id,
+            fecha_solicitud,
+            alumnos (
+                alumno,
+                unidad,
+                sexo
+            )
+        `)
+        .eq('id', waitingId)
+        .single()
+
+    if (fetchError || !turno) {
+        return { error: 'No se encontró el turno a anular' }
+    }
+
+    const alumno = (turno.alumnos as any)
+
+    // 2. Obtener el usuario actual para registrar quién anula
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // 3. Guardar una copia del turno anulado
+    const { error: insertError } = await supabase
+        .from('turnos_anulados')
+        .insert({
+            alumno_id: turno.alumno_id,
+            alumno_nombre: alumno?.alumno || 'Desconocido',
+            alumno_unidad: alumno?.unidad || null,
+            alumno_sexo: alumno?.sexo || null,
+            fecha_solicitud: turno.fecha_solicitud,
+            fecha_anulacion: new Date().toISOString(),
+            anulado_por: user?.id || null
+        })
+
+    if (insertError) {
+        console.error('Error al guardar turno anulado:', insertError)
+        return { error: 'Error al registrar la anulación' }
+    }
+
+    // 3. Eliminar el turno de la lista de espera
+    const { error: deleteError } = await supabase
+        .from('lista_espera')
+        .delete()
+        .eq('id', waitingId)
+
+    if (deleteError) {
+        return { error: 'Error al eliminar de la lista de espera' }
+    }
+
+    revalidatePath('/')
+    revalidatePath('/entregar')
+
+    return { success: true }
+}
+
 export async function solicitarUsoAseo(alumnosIds: string[]) {
     const supabase = await createClient()
 

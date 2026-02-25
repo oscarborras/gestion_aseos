@@ -225,6 +225,39 @@ export type Database = {
           },
         ]
       }
+      turnos_anulados: {
+        Row: {
+          id: number
+          alumno_id: string
+          alumno_nombre: string
+          alumno_unidad: string | null
+          alumno_sexo: string | null
+          fecha_solicitud: string
+          fecha_anulacion: string
+          anulado_por: string | null
+        }
+        Insert: {
+          id?: number
+          alumno_id: string
+          alumno_nombre: string
+          alumno_unidad?: string | null
+          alumno_sexo?: string | null
+          fecha_solicitud: string
+          fecha_anulacion?: string
+          anulado_por?: string | null
+        }
+        Update: {
+          id?: number
+          alumno_id?: string
+          alumno_nombre?: string
+          alumno_unidad?: string | null
+          alumno_sexo?: string | null
+          fecha_solicitud?: string
+          fecha_anulacion?: string
+          anulado_por?: string | null
+        }
+        Relationships: []
+      }
       perfiles: {
         Row: {
           id: number
