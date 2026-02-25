@@ -1,9 +1,12 @@
 import { createClient } from '@/utils/supabase/server'
-import EntregarClient from './EntregarClient'
+import EntregarClient from '@/app/entregar/EntregarClient'
 
 export const dynamic = 'force-dynamic'
 
+import { checkPermission } from '@/lib/permissions'
+
 export default async function EntregarPage() {
+    await checkPermission('/entregar')
     const supabase = await createClient()
 
     // 1. Obtener lista de espera actual (solo 'esperando') con datos de alumnos

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Info, Wrench, RotateCw } from 'lucide-react'
+import { Info, Wrench, RotateCw, ShieldCheck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { toggleMantenimiento } from '../actions'
@@ -57,6 +57,16 @@ export default function MantenimientoClient({ aseos }: { aseos: Aseo[] }) {
                 >
                     <RotateCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
                     Refrescar estado
+                </button>
+            </div>
+
+            <div className="flex justify-end mb-8">
+                <button
+                    onClick={() => router.push('/mantenimiento/usuarios')}
+                    className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all shadow-sm hover:shadow group"
+                >
+                    <ShieldCheck className="w-5 h-5 text-primary-brand group-hover:scale-110 transition-transform" />
+                    Gestionar Permisos de Usuarios
                 </button>
             </div>
 

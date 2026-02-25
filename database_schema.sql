@@ -53,3 +53,20 @@ CREATE TABLE public.lista_espera (
   CONSTRAINT lista_espera_pkey PRIMARY KEY (id),
   CONSTRAINT lista_espera_alumno_id_fkey FOREIGN KEY (alumno_id) REFERENCES public.alumnos(id)
 );
+
+CREATE TABLE public.perfiles (
+  id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  nombre text NOT NULL UNIQUE,
+  descripcion text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT perfiles_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.user_roles (
+  user_id uuid NOT NULL,
+  perfil_id integer NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_roles_pkey PRIMARY KEY (user_id, perfil_id),
+  CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
+  CONSTRAINT user_roles_perfil_id_fkey FOREIGN KEY (perfil_id) REFERENCES public.perfiles(id)
+);

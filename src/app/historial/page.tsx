@@ -9,9 +9,12 @@ export const dynamic = 'force-dynamic'
 
 const MADRID_TZ = 'Europe/Madrid'
 
+import { checkPermission } from '@/lib/permissions'
+
 export default async function HistorialPage(props: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+    await checkPermission('/historial')
     const searchParams = await props.searchParams
     const supabase = await createClient()
 

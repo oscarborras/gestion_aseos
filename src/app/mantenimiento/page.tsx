@@ -4,14 +4,11 @@ import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
+import { checkPermission } from '@/lib/permissions'
+
 export default async function MantenimientoPage() {
+    await checkPermission('/mantenimiento')
     const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        redirect('/login')
-    }
 
     // Fetch all aseos
     const { data: aseos } = await supabase

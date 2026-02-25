@@ -1,0 +1,8 @@
+src/app/entregar/page.tsx(1,30): error TS2307: Cannot find module '@/utils/supabase/server' or its corresponding type declarations.
+src/app/entregar/page.tsx(2,28): error TS6142: Module './EntregarClient' was resolved to '/home/oscar/Antigravity/gestion-aseos/src/app/entregar/EntregarClient.tsx', but '--jsx' is not set.
+src/app/entregar/page.tsx(6,33): error TS2307: Cannot find module '@/lib/permissions' or its corresponding type declarations.
+src/app/entregar/page.tsx(45,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/entregar/page.tsx(46,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/entregar/page.tsx(47,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/entregar/page.tsx(50,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/entregar/page.tsx(55,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.

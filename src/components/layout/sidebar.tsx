@@ -12,6 +12,7 @@ const routes = [
         href: '/',
         color: 'text-amber-500',
         activeColor: 'bg-amber-500/10 text-amber-500',
+        roles: ['Admin', 'Directiva', 'Public']
     },
     {
         label: 'Entregar llave',
@@ -19,6 +20,7 @@ const routes = [
         href: '/entregar',
         color: 'text-emerald-500',
         activeColor: 'bg-emerald-500/10 text-emerald-500',
+        roles: ['Admin', 'Directiva', 'Ordenanza']
     },
     {
         label: 'Devolver llave',
@@ -26,6 +28,7 @@ const routes = [
         href: '/salida',
         color: 'text-rose-500',
         activeColor: 'bg-rose-500/10 text-rose-500',
+        roles: ['Admin', 'Directiva', 'Ordenanza', 'Public']
     },
     {
         label: 'Panel de Control',
@@ -33,35 +36,42 @@ const routes = [
         href: '/dashboard',
         color: 'text-indigo-500',
         activeColor: 'bg-indigo-500/10 text-indigo-500',
+        roles: ['Admin', 'Directiva']
     },
     {
         label: 'Entrada',
         icon: LogIn,
         href: '/entrada',
+        roles: ['Admin', 'Directiva']
     },
     {
         label: 'Historial',
         icon: History,
         href: '/historial',
+        roles: ['Admin', 'Directiva']
     },
     {
         label: 'Ajustes',
         icon: Settings,
         href: '/mantenimiento',
-        adminOnly: true
+        roles: ['Admin', 'Directiva']
     },
     {
         label: 'Importar',
         icon: Users,
         href: '/alumnos/importar',
-        adminOnly: true
+        roles: ['Admin']
     }
 ]
 
 import { logout } from '@/app/login/actions'
 
-export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
+export function Sidebar({ roles = [], user }: { roles?: string[], user?: any }) {
     const pathname = usePathname()
+
+    // Si no hay roles, tratamos al usuario como 'Public'
+    const userRoles = roles.length > 0 ? roles : ['Public']
+    const isAdmin = userRoles.includes('Admin')
 
     return (
         <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full z-30 flex flex-col justify-between hidden md:flex">
@@ -77,12 +87,13 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                 </div>
                 <nav className="mt-6 px-4 space-y-2">
                     {routes.map((route) => {
-                        // Ocultar si es solo para admin y el usuario no lo es
-                        if (route.adminOnly && !isAdmin) return null
+                        // Filtrar por roles
+                        const hasAccess = route.roles.some(role => userRoles.includes(role))
+                        if (!hasAccess) return null
 
                         const isActive = pathname === route.href
 
-                        // Diseño especial para "Pedir Turno" (similar al botón del dashboard)
+                        // Diseño especial para "Pedir Turno"
                         if (route.label === 'Pedir Turno') {
                             return (
                                 <Link
@@ -153,15 +164,17 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
             </div>
 
             <div className="p-4 border-t border-gray-100 dark:border-gray-700">
-                {isAdmin ? (
+                {user ? (
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-3 p-2 rounded-lg">
-                            <div className="h-8 w-8 rounded-full bg-primary-brand/20 flex items-center justify-center text-xs font-bold text-primary-brand">
-                                AD
+                            <div className="h-8 w-8 rounded-full bg-primary-brand/20 flex items-center justify-center text-xs font-bold text-primary-brand uppercase">
+                                {user.email ? user.email.substring(0, 2) : 'US'}
                             </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">Admin</p>
-                                <p className="text-xs text-gray-500">Sesión Activa</p>
+                            <div className="overflow-hidden">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {roles.length > 0 ? userRoles.join(', ') : 'Usuario'}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate">{user.email}</p>
                             </div>
                         </div>
                         <form action={logout}>
@@ -177,8 +190,8 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                             <LogIn className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">Login</p>
-                            <p className="text-xs text-gray-500">Acceso Admin</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Acceso Personal</p>
+                            <p className="text-xs text-gray-500">Entrar al sistema</p>
                         </div>
                     </Link>
                 )}

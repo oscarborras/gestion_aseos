@@ -3,7 +3,10 @@ import SalidaClient from '@/app/salida/SalidaClient'
 
 export const dynamic = 'force-dynamic'
 
+import { checkPermission } from '@/lib/permissions'
+
 export default async function SalidaPage() {
+    await checkPermission('/salida')
     const supabase = await createClient()
 
     // Fetch only necessary data: active sessions (registros without fecha_salida)

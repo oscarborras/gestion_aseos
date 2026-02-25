@@ -133,7 +133,17 @@ export default function EntregarClient({
                         {firstMatch && assignedAseo ? (
                             <div className="space-y-6 flex-grow flex flex-col">
                                 <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 space-y-4">
-                                    <div className="space-y-3">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-primary-brand/10 rounded-full flex items-center justify-center border border-primary-brand/20 shrink-0">
+                                            <CheckCircle className="w-5 h-5 text-primary-brand" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-400 uppercase">Aseo Destino</p>
+                                            <p className="font-bold text-slate-900 dark:text-white text-lg leading-tight">{assignedAseo.nombre}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700">
                                         <p className="text-xs font-bold text-slate-400 uppercase">Alumnos/as ({currentStudents.length})</p>
                                         <div className="space-y-3">
                                             {currentStudents.map((s) => (
@@ -147,16 +157,6 @@ export default function EntregarClient({
                                                     </div>
                                                 </div>
                                             ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-4 pt-2 border-t border-slate-200 dark:border-slate-700">
-                                        <div className="w-10 h-10 bg-primary-brand/10 rounded-full flex items-center justify-center border border-primary-brand/20 shrink-0">
-                                            <CheckCircle className="w-5 h-5 text-primary-brand" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-slate-400 uppercase">Aseo Destino</p>
-                                            <p className="font-bold text-slate-900 dark:text-white text-lg leading-tight">{assignedAseo.nombre}</p>
                                         </div>
                                     </div>
                                 </div>

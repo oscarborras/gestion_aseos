@@ -4,14 +4,11 @@ import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
+import { checkPermission } from '@/lib/permissions'
+
 export default async function ImportarAlumnosPage() {
+    await checkPermission('/alumnos/importar')
     const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        redirect('/login')
-    }
 
     const { count } = await supabase
         .from('alumnos')

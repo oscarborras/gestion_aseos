@@ -23,7 +23,9 @@ export default function LoginForm() {
             toast.error(result.error)
         } else {
             toast.success('Sesión iniciada correctamente')
-            router.push('/mantenimiento')
+            // Usamos window.location para forzar un reload completo del servidor
+            // y que el layout lea los roles correctos del usuario autenticado
+            window.location.href = '/mantenimiento'
         }
     }
 

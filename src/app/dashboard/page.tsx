@@ -7,7 +7,10 @@ import { formatInTimeZone } from 'date-fns-tz'
 
 const MADRID_TZ = 'Europe/Madrid'
 
+import { checkPermission } from '@/lib/permissions'
+
 export default async function DashboardPage() {
+    await checkPermission('/dashboard')
     const supabase = await createClient()
 
     // 1. Obtener aseos

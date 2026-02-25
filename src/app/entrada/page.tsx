@@ -3,11 +3,14 @@ import EntradaForm from '@/app/entrada/EntradaForm'
 
 export const dynamic = 'force-dynamic'
 
+import { checkPermission } from '@/lib/permissions'
+
 export default async function EntradaPage({
     searchParams,
 }: {
     searchParams: { aseo?: string }
 }) {
+    await checkPermission('/entrada')
     const supabase = await createClient()
 
     // Fetch only necessary data

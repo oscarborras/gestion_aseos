@@ -342,3 +342,62 @@ export async function entregarTurnoGrupo(alumnos: { waitingId: number, alumnoId:
 
     return { success: true }
 }
+
+export async function getUserRoles() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    // Primero obtenemos los perfil_ids del usuario
+    const { data: userRolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('perfil_id')
+        .eq('user_id', user.id)
+
+    if (rolesError || !userRolesData || userRolesData.length === 0) return []
+
+    // Luego obtenemos los nombres de los perfiles
+    const perfilIds = userRolesData.map((r: any) => r.perfil_id)
+    const { data: perfilesData } = await supabase
+        .from('perfiles')
+        .select('nombre')
+        .in('id', perfilIds)
+
+    return perfilesData?.map((p: any) => p.nombre) || []
+}
+
+export async function updateUserRoles(targetUserId: string, roleIds: number[]) {
+    const supabase = await createClient()
+
+    // Verificar si el que llama es Admin
+    const myRoles = await getUserRoles()
+    if (!myRoles.includes('Admin')) {
+        return { error: 'No tienes permiso para realizar esta acción' }
+    }
+
+    // 1. Eliminar roles actuales del usuario objetivo
+    const { error: deleteError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', targetUserId)
+
+    if (deleteError) return { error: deleteError.message }
+
+    // 2. Insertar los nuevos roles
+    if (roleIds.length > 0) {
+        const rolesToInsert = roleIds.map(perfil_id => ({
+            user_id: targetUserId,
+            perfil_id
+        }))
+
+        const { error: insertError } = await supabase
+            .from('user_roles')
+            .insert(rolesToInsert)
+
+        if (insertError) return { error: insertError.message }
+    }
+
+    revalidatePath('/mantenimiento/usuarios')
+    return { success: true }
+}

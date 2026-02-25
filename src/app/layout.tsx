@@ -4,6 +4,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { createClient } from "@/utils/supabase/server";
+import { getUserRoles } from "@/app/actions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default async function RootLayout({
 }>) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const roles = await getUserRoles()
 
   return (
     <html lang="es">
@@ -42,7 +44,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${lexend.variable} antialiased bg-background-light dark:bg-background-dark min-h-screen font-sans text-gray-800 dark:text-gray-100 transition-colors duration-200`}
       >
         <div className="flex min-h-screen">
-          <Sidebar isAdmin={!!user} />
+          <Sidebar roles={roles} user={user} />
           <main className="flex-1 md:ml-64 p-6 lg:p-12">
             <div className="max-w-7xl mx-auto space-y-8">
               {children}

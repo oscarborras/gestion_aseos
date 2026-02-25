@@ -12,8 +12,9 @@ export default async function HomePage() {
     .select('*')
     .order('alumno')
 
+  // Extraer unidades únicas para el filtro
   const alumnos = alumnosBase || []
-  const unidades = Array.from(new Set(alumnos.map(a => a.unidad))).sort()
+  const unidades = Array.from(new Set(alumnos.map((a: any) => a.unidad))).sort()
 
   // Obtener lista de espera actual con el estado para filtrar y estadísticas
   const { data: waitingData } = await supabase
@@ -29,13 +30,13 @@ export default async function HomePage() {
 
   const activeWaiting = waitingData || []
   const idsExcluir = new Set([
-    ...activeWaiting.map(w => w.alumno_id),
-    ...(enAseoData || []).map(r => r.alumno_id)
+    ...activeWaiting.map((w: any) => w.alumno_id),
+    ...(enAseoData || []).map((r: any) => r.alumno_id)
   ])
 
-  const waitingListStats = activeWaiting
-    .filter(w => w.estado === 'esperando')
-    .map(item => ({
+  const waitingListStats = (activeWaiting as any[])
+    .filter((w: any) => w.estado === 'esperando')
+    .map((item: any) => ({
       alumno_id: item.alumno_id,
       sexo: (item.alumnos as any)?.sexo
     }))
