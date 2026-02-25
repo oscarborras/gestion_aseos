@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getUserRoles } from '@/app/actions'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -19,9 +20,11 @@ export async function login(formData: FormData) {
         return { error: error.message }
     }
 
+    const roles = await getUserRoles()
+
     revalidatePath('/', 'layout')
 
-    return { success: true }
+    return { success: true, roles }
 }
 
 export async function logout() {

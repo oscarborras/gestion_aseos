@@ -23,9 +23,16 @@ export default function LoginForm() {
             toast.error(result.error)
         } else {
             toast.success('Sesión iniciada correctamente')
-            // Usamos window.location para forzar un reload completo del servidor
-            // y que el layout lea los roles correctos del usuario autenticado
-            window.location.href = '/mantenimiento'
+
+            const roles = result.roles || []
+            // Si tiene el rol profesor y no es admin ni directiva, lo mandamos a la lista de espera
+            const isOnlyProfesor = roles.includes('Profesor') && !roles.includes('Admin') && !roles.includes('Directiva') && !roles.includes('Ordenanza')
+
+            if (isOnlyProfesor) {
+                window.location.href = '/lista-espera'
+            } else {
+                window.location.href = '/mantenimiento'
+            }
         }
     }
 
