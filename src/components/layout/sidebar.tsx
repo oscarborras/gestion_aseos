@@ -225,6 +225,7 @@ export function Sidebar({ roles = [], user }: { roles?: string[], user?: any }) 
                         </div>
                     </Link>
                 )}
+                <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.1</span>
             </div>
         </aside>
     )
