@@ -72,6 +72,19 @@ export default function UserRolesClient({
 
     return (
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-8 bg-slate-50/50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-2xl text-amber-600 dark:text-amber-400">
+                        <Shield className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-slate-900 dark:text-white">Panel de Seguridad</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            Haga clic en los iconos para asignar o retirar perfiles. Los cambios se aplican de forma inmediata y afectarán a la visibilidad de los módulos para el usuario seleccionado.
+                        </p>
+                    </div>
+                </div>
+            </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
@@ -131,19 +144,7 @@ export default function UserRolesClient({
                 </table>
             </div>
 
-            <div className="p-8 bg-slate-50/50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-800">
-                <div className="flex items-start gap-4">
-                    <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-2xl text-amber-600 dark:text-amber-400">
-                        <Shield className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-slate-900 dark:text-white">Panel de Seguridad</h4>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                            Haga clic en los iconos para asignar o retirar perfiles. Los cambios se aplican de forma inmediata y afectarán a la visibilidad de los módulos para el usuario seleccionado.
-                        </p>
-                    </div>
-                </div>
-            </div>
+
         </div>
     )
 }
