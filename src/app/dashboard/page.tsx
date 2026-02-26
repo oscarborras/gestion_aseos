@@ -216,12 +216,6 @@ export default async function DashboardPage() {
                 </Link>
             </div>
 
-            <footer className="mt-12 text-center border-t border-gray-100 dark:border-gray-800 pt-8 pb-4">
-                <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center justify-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Sistema de Gestión Escolar • I.E.S. Julio Verne
-                </p>
-            </footer>
         </div>
     )
 }

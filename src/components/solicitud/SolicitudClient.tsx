@@ -96,29 +96,29 @@ export default function SolicitudClient({
     const renderContent = () => {
         if (step === 1) {
             return (
-                <div className="flex flex-col items-center justify-center py-12 space-y-8 animate-in fade-in zoom-in-95 duration-500">
-                    <div className="w-24 h-24 bg-primary-brand/10 rounded-full flex items-center justify-center">
-                        <UserPlus className="w-12 h-12 text-primary-brand" />
+                <div className="flex flex-col items-center justify-center py-6 space-y-6 animate-in fade-in zoom-in-95 duration-500">
+                    <div className="w-20 h-20 bg-primary-brand/10 rounded-full flex items-center justify-center">
+                        <UserPlus className="w-10 h-10 text-primary-brand" />
                     </div>
-                    <div className="text-center space-y-2 px-4">
-                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">¿Necesitas usar el aseo?</h2>
-                        <p className="text-slate-500 dark:text-slate-400">Pulsa el botón para identificarte y entrar en la lista de espera</p>
+                    <div className="text-center space-y-1 px-4">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">¿Necesitas usar el aseo?</h2>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Pulsa el botón para identificarte y entrar en la lista de espera</p>
                     </div>
                     <button
                         onClick={() => setStep(2)}
-                        className="group relative w-full max-w-md h-32 bg-primary-brand hover:bg-primary-light text-white rounded-3xl shadow-2xl shadow-primary-brand/30 transition-all active:scale-95 flex items-center justify-center gap-4 overflow-hidden"
+                        className="group relative w-full max-w-md h-20 bg-primary-brand hover:bg-primary-light text-white rounded-3xl shadow-2xl shadow-primary-brand/30 transition-all active:scale-95 flex items-center justify-center gap-4 overflow-hidden"
                     >
-                        <span className="text-2xl font-bold">Solicitar uso de aseo</span>
-                        <ChevronRight className="w-8 h-8 transition-transform group-hover:translate-x-2" />
+                        <span className="text-xl font-bold">Solicitar uso de aseo</span>
+                        <ChevronRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />
                     </button>
                 </div>
             )
         }
 
         return (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-slate-400 uppercase tracking-wider ml-1">
                                 1. Selecciona tu curso
@@ -126,7 +126,7 @@ export default function SolicitudClient({
                             <div className="relative group">
                                 <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 transition-colors group-focus-within:text-primary-brand" />
                                 <select
-                                    className="w-full pl-12 pr-10 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary-brand/10 focus:border-primary-brand outline-none transition-all appearance-none cursor-pointer font-medium"
+                                    className="w-full pl-12 pr-10 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary-brand/10 focus:border-primary-brand outline-none transition-all appearance-none cursor-pointer font-medium"
                                     value={selectedCurso}
                                     onChange={(e) => setSelectedCurso(e.target.value)}
                                 >
@@ -149,7 +149,7 @@ export default function SolicitudClient({
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 transition-colors group-focus-within:text-primary-brand" />
                                 <input
                                     type="text"
-                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary-brand/10 focus:border-primary-brand outline-none transition-all placeholder:text-slate-400 font-medium"
+                                    className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-primary-brand/10 focus:border-primary-brand outline-none transition-all placeholder:text-slate-400 font-medium"
                                     placeholder="Escribe tu nombre..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -165,7 +165,7 @@ export default function SolicitudClient({
                                     Resultados ({alumnosFiltrados.length})
                                 </span>
                             </div>
-                            <div className="max-h-80 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 custom-scrollbar">
+                            <div className="max-h-64 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 custom-scrollbar">
                                 {alumnosFiltrados.length === 0 ? (
                                     <div className="p-8 text-sm text-slate-500 col-span-2 text-center flex flex-col items-center gap-2">
                                         <Search className="w-8 h-8 text-slate-300" />
@@ -201,18 +201,18 @@ export default function SolicitudClient({
                         </div>
                     </div>
 
-                    <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-end border-t border-slate-50 dark:border-slate-800">
+                    <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-end border-t border-slate-50 dark:border-slate-800">
                         <button
                             type="button"
                             onClick={() => setStep(1)}
-                            className="flex-1 sm:flex-none px-8 py-4 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-semibold transition-colors bg-slate-100 dark:bg-slate-800"
+                            className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-semibold transition-colors bg-slate-100 dark:bg-slate-800"
                         >
                             Cancelar
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={loading || selectedAlumnos.length === 0}
-                            className="flex-1 sm:flex-none bg-primary-brand hover:bg-primary-light text-white px-10 py-4 rounded-xl font-bold shadow-xl shadow-primary-brand/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
+                            className="flex-1 sm:flex-none bg-primary-brand hover:bg-primary-light text-white px-8 py-3 rounded-xl font-bold shadow-xl shadow-primary-brand/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
                         >
                             {loading ? 'Enviando...' : 'Entrar en lista'}
                             {!loading && <CheckCircle className="w-5 h-5" />}
@@ -225,7 +225,7 @@ export default function SolicitudClient({
 
     return (
         <div className="bg-white dark:bg-slate-900 shadow-2xl rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300">
-            <header className="bg-primary-brand/[0.03] px-8 py-8 border-b border-slate-100 dark:border-slate-800">
+            <header className="bg-primary-brand/[0.03] px-8 py-4 md:py-6 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -239,7 +239,7 @@ export default function SolicitudClient({
                 </div>
             </header>
 
-            <div className="p-8 md:p-12">
+            <div className="p-4 md:p-8">
                 {renderContent()}
             </div>
         </div>

@@ -42,10 +42,13 @@ export default function LayoutClient({
                     </button>
                 </header>
 
-                <main className="flex-1 p-6 lg:p-12">
-                    <div className="max-w-7xl mx-auto space-y-8">
+                <main className="flex-1 p-4 lg:p-8 flex flex-col">
+                    <div className="max-w-7xl mx-auto space-y-4 flex-1 w-full">
                         {children}
                     </div>
+                    <footer className="mt-8 pb-4 text-center text-slate-400 text-sm font-medium">
+                        © {new Date().getFullYear()} - I.E.S. Julio Verne - Sistema de Gestión de Aseos
+                    </footer>
                 </main>
             </div>
         </div>

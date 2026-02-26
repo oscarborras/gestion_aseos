@@ -42,17 +42,13 @@ export default async function HomePage() {
     }))
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-8 md:py-12">
+    <div className="w-full max-w-4xl mx-auto px-4 py-4 md:py-6">
       <SolicitudClient
         unidades={unidades}
         alumnos={alumnos}
         initialWaitingList={waitingListStats}
         excludeIds={Array.from(idsExcluir)}
       />
-
-      <footer className="mt-8 text-center text-slate-400 text-sm font-medium">
-        © {new Date().getFullYear()} I.E.S Julio Verne - Sistema de Gestión de Aseos
-      </footer>
     </div>
   )
 }

@@ -104,10 +104,10 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
             )}
 
             <aside className={cn(
-                "w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out md:translate-x-0",
+                "w-58 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full z-50 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
-                <div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
                     <div className="h-24 flex items-center justify-between px-6 border-b border-gray-100 dark:border-gray-700 gap-3">
                         <div className="flex items-center gap-3">
                             <div className="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100/50 dark:border-indigo-500/20">
@@ -253,7 +253,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                             </div>
                         </Link>
                     )}
-                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.1.3</span>
+                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.1.5</span>
                 </div>
             </aside>
         </>
