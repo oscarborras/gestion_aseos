@@ -31,6 +31,14 @@ const routes = [
         roles: ['Admin', 'Directiva', 'Ordenanza', 'Public']
     },
     {
+        label: 'Lista de Espera',
+        icon: Users,
+        href: '/lista-espera',
+        color: 'text-indigo-500',
+        roles: ['Admin', 'Directiva', 'Profesor']
+    },
+
+    {
         label: 'Panel de Control',
         icon: LayoutDashboard,
         href: '/dashboard',
@@ -55,13 +63,6 @@ const routes = [
         icon: Settings,
         href: '/mantenimiento',
         roles: ['Admin', 'Directiva']
-    },
-    {
-        label: 'Lista de Espera',
-        icon: Users,
-        href: '/lista-espera',
-        color: 'text-indigo-500',
-        roles: ['Admin', 'Directiva', 'Profesor']
     },
     {
         label: 'Usuarios',
@@ -252,7 +253,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                             </div>
                         </Link>
                     )}
-                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.1.2</span>
+                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.1.3</span>
                 </div>
             </aside>
         </>
