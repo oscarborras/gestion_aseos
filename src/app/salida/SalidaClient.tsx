@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CheckCircle, Timer, Info, Edit, Frown, Meh, Smile, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -12,6 +12,16 @@ type Registro = any
 
 export default function SalidaClient({ registros }: { registros: Registro[] }) {
     const router = useRouter()
+
+    // Ordenar de mayor a menor tiempo de uso (el que entró antes primero)
+    const sortedRegistros = useMemo(() => {
+        return [...registros].sort((a, b) => {
+            const timeA = new Date(a.fecha_entrada).getTime()
+            const timeB = new Date(b.fecha_entrada).getTime()
+            return timeA - timeB
+        })
+    }, [registros])
+
     const [selectedRegistro, setSelectedRegistro] = useState<Registro | null>(null)
     const [loading, setLoading] = useState(false)
 
@@ -53,13 +63,13 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
                 </div>
 
                 <div className="flex-grow overflow-y-auto space-y-4 px-2 pb-24 md:pb-0">
-                    {registros.length === 0 ? (
+                    {sortedRegistros.length === 0 ? (
                         <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-xl text-center border border-dashed border-slate-200 dark:border-slate-700">
                             <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
                             <p className="text-slate-500 font-medium">Todos los aseos están libres</p>
                         </div>
                     ) : (
-                        registros.map(registro => {
+                        sortedRegistros.map(registro => {
                             const isSelected = selectedRegistro?.id === registro.id
                             const entradaTime = new Date(registro.fecha_entrada)
 
@@ -121,33 +131,34 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
                     </div>
                 ) : (
                     <>
-                        <div className="h-24 bg-gradient-to-r from-primary-brand to-primary-light relative flex-shrink-0">
+                        <div className="h-16 bg-gradient-to-r from-primary-brand to-primary-light relative flex-shrink-0">
                         </div>
 
-                        <div className="flex-grow flex flex-col px-8 md:px-12 -mt-12 relative z-10 overflow-y-auto pb-8">
-                            <div className="flex items-end justify-between mb-8">
+                        <div className="flex-grow flex flex-col px-6 md:px-10 -mt-8 relative z-10 overflow-y-auto pb-4">
+                            <div className="flex items-end justify-between mb-4">
                                 <div>
-                                    <div className="h-20 w-20 rounded-2xl bg-white dark:bg-slate-700 shadow-lg p-1.5 flex items-center justify-center mb-4">
-                                        <div className="h-full w-full bg-slate-100 dark:bg-slate-600 rounded-xl flex items-center justify-center text-3xl font-bold text-primary-brand uppercase">
+                                    <div className="h-14 w-14 rounded-xl bg-white dark:bg-slate-700 shadow-md p-1 flex items-center justify-center mb-2">
+                                        <div className="h-full w-full bg-slate-100 dark:bg-slate-600 rounded-lg flex items-center justify-center text-xl font-bold text-primary-brand uppercase leading-none">
                                             {selectedRegistro.alumnos?.alumno.slice(0, 2)}
                                         </div>
                                     </div>
-                                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white leading-none mb-1">
                                         {selectedRegistro.alumnos?.alumno}
                                     </h2>
-                                    <p className="text-slate-500 dark:text-slate-400">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">
                                         Saliendo de: <span className="font-bold text-primary-brand">{selectedRegistro.aseos?.nombre}</span>
                                     </p>
+                                    <hr className="border-slate-200 dark:border-slate-700" />
                                 </div>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
+                            <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
                                 {/* Opciones de estado */}
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-wide">
+                                <div className="pt-3">
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-500 mb-2 uppercase tracking-wide">
                                         Estado del Aseo al Salir
                                     </label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                         <label className="cursor-pointer group">
                                             <input type="radio" name="estado" value="Bueno" defaultChecked className="peer sr-only" />
                                             <div className="flex flex-col items-center p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 hover:bg-white peer-checked:border-emerald-500 peer-checked:bg-emerald-50 dark:peer-checked:bg-emerald-900/10 transition-all">
@@ -175,44 +186,44 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
                                 </div>
 
                                 {/* Observaciones */}
-                                <div>
+                                <div className="pt-3">
                                     <label htmlFor="observaciones" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wide">
-                                        Observaciones de Salida
+                                        Observaciones de Salida (opcional)
                                     </label>
                                     <div className="relative">
-                                        <Edit className="absolute top-3 left-3 text-slate-400 w-5 h-5 pointer-events-none" />
+                                        <Edit className="absolute top-2.5 left-3 text-slate-400 w-4 h-4 pointer-events-none" />
                                         <textarea
                                             name="observaciones"
                                             id="observaciones"
-                                            rows={3}
-                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-brand outline-none resize-none transition-shadow placeholder-slate-400"
-                                            placeholder="¿Algún problema? (ej. falta papel, suelo mojado...)"
+                                            rows={2}
+                                            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-brand outline-none resize-none transition-shadow placeholder-slate-400"
+                                            placeholder="¿Algún problema? (ej. falta papel, suelo mojado, huele mal...)"
                                         ></textarea>
                                     </div>
                                 </div>
 
                                 {/* Acciones */}
-                                <div className="pt-4 flex items-center justify-end gap-4 border-t border-slate-100 dark:border-slate-700 mt-auto">
+                                <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-700 mt-auto">
                                     <button
                                         type="button"
                                         onClick={() => setSelectedRegistro(null)}
-                                        className="px-6 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 font-bold transition-colors"
+                                        className="px-5 py-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 font-bold transition-colors text-sm"
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="px-8 py-3 bg-primary-brand hover:bg-primary-light text-white rounded-xl shadow-lg shadow-primary-brand/30 font-bold flex items-center gap-2 transform active:scale-95 transition-all disabled:opacity-70"
+                                        className="px-6 py-2 bg-primary-brand hover:bg-primary-light text-white rounded-xl shadow-lg shadow-primary-brand/30 font-bold flex items-center gap-2 transform active:scale-95 transition-all disabled:opacity-70 text-sm"
                                     >
-                                        <CheckCircle className="w-5 h-5" />
+                                        <CheckCircle className="w-4 h-4" />
                                         {loading ? 'Procesando...' : 'Confirmar Salida'}
                                     </button>
                                 </div>
                             </form>
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 px-8 py-4 flex justify-between items-center text-xs text-slate-400 shrink-0">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 px-6 py-2 flex justify-between items-center text-[10px] text-slate-400 shrink-0">
                             <div className="flex items-center gap-2">
                                 <Info className="w-4 h-4" />
                                 <span>Esta acción no puede deshacerse. El aseo {selectedRegistro.aseos?.nombre} se actualizará.</span>

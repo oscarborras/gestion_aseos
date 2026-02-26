@@ -23,7 +23,7 @@ export default async function SalidaPage() {
         .order('fecha_entrada', { ascending: false })
 
     return (
-        <div className="flex-grow flex flex-col md:flex-row w-full gap-6 md:gap-8 overflow-hidden h-[calc(100vh-8rem)] animate-in fade-in slide-in-from-bottom-4">
+        <div className="flex-grow flex flex-col md:flex-row w-full gap-6 md:gap-8 overflow-hidden h-[calc(100vh-9rem)] animate-in fade-in slide-in-from-bottom-4">
             <SalidaClient registros={registrosActivos || []} />
         </div>
     )
