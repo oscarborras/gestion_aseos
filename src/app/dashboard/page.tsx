@@ -4,6 +4,7 @@ import Link from 'next/link'
 import CurrentTime from '@/components/dashboard/CurrentTime'
 import ElapsedTimer from '@/components/dashboard/ElapsedTimer'
 import { formatInTimeZone } from 'date-fns-tz'
+import DashboardRealtime from '@/components/dashboard/DashboardRealtime'
 
 const MADRID_TZ = 'Europe/Madrid'
 
@@ -17,7 +18,7 @@ export default async function DashboardPage() {
     const canManage = userRoles.includes('Admin') || userRoles.includes('Directiva')
 
     // 1. Obtener aseos
-    const { data: aseosBase } = await supabase.from('aseos').select('*, estados(nombre)')
+    const { data: aseosBase } = await supabase.from('aseos').select('*, estados(nombre)').order('id', { ascending: true })
 
     // 2. Obtener registros activos (alumnos en el aseo ahora)
     const { data: registrosActivos } = await supabase
@@ -68,6 +69,7 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-8 animate-in fade-in zoom-in duration-500">
+            <DashboardRealtime />
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white uppercase leading-tight">Panel de control</h1>

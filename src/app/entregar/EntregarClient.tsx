@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
-// Eliminamos la constante de polling ya que usaremos Supabase Realtime
+const MIN_WAITING_FOR_GROUP = 3
 
 interface WaitingItem {
     id: number
@@ -151,6 +151,32 @@ export default function EntregarClient({
     // Listado separado por sexos para el Bloque 2
     const chicasWaiting = waitingList.filter(s => s.sexo?.toUpperCase() === 'M')
     const chicosWaiting = waitingList.filter(s => s.sexo?.toUpperCase() !== 'M')
+
+    // Lógica para auto-asignar pareja si hay mucha gente esperando
+    useEffect(() => {
+        if (!firstMatch) {
+            setAssignedWaitIds([])
+            return
+        }
+
+        const sex = firstMatch.student.sexo?.toUpperCase()
+        const sameSexWaiting = sex === 'M' ? chicasWaiting : chicosWaiting
+
+        // Si hay >= MIN_WAITING_FOR_GROUP del mismo sexo esperando,
+        // y todavía no hemos asignado a nadie extra manualmente (o el que hay es el auto-asignado),
+        // pre-cargamos al segundo de la lista.
+        if (sameSexWaiting.length >= MIN_WAITING_FOR_GROUP && assignedWaitIds.length === 0) {
+            const secondInLine = sameSexWaiting.find(s => s.id !== firstMatch.student.id)
+            if (secondInLine) {
+                setAssignedWaitIds([secondInLine.id])
+            }
+        }
+
+        // Si el primer match cambia radicalmente (otro alumno o aseo),
+        // quizá deberíamos resetear, pero el router.refresh() ya limpia el estado 
+        // de la página si se navega. Aquí mejor ser conservadores para no borrar 
+        // selecciones manuales del usuario.
+    }, [firstMatch?.student.id, chicasWaiting.length, chicosWaiting.length])
 
     const handleDeliver = async () => {
         if (!assignedAseo || currentStudents.length === 0) return
