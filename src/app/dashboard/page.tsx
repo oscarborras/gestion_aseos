@@ -8,10 +8,13 @@ import { formatInTimeZone } from 'date-fns-tz'
 const MADRID_TZ = 'Europe/Madrid'
 
 import { checkPermission } from '@/lib/permissions'
+import { getUserRoles } from '@/app/actions'
 
 export default async function DashboardPage() {
     await checkPermission('/dashboard')
     const supabase = await createClient()
+    const userRoles = await getUserRoles()
+    const canManage = userRoles.includes('Admin') || userRoles.includes('Directiva')
 
     // 1. Obtener aseos
     const { data: aseosBase } = await supabase.from('aseos').select('*, estados(nombre)')
@@ -185,7 +188,7 @@ export default async function DashboardPage() {
                                                 <p className="text-xs font-bold text-orange-500 uppercase tracking-widest mt-4">No disponible</p>
                                             )}
                                         </div>
-                                        {!isMantenimiento && (
+                                        {!isMantenimiento && canManage && (
                                             <Link href={`/entrada?aseo=${aseo.id}`} prefetch={false}>
                                                 <button className="mt-6 w-full py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-sm font-bold transition-colors hover:bg-emerald-100 flex items-center justify-center gap-2">
                                                     <LogIn className="w-5 h-5" />
@@ -201,20 +204,22 @@ export default async function DashboardPage() {
                 })}
             </section>
 
-            <div className="fixed bottom-8 right-8 z-10 flex flex-col gap-4 items-end">
-                <Link href="/">
-                    <button className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-amber-500/20 transition-all duration-300 rounded-full px-6 py-3 flex items-center gap-2 text-base font-bold transform hover:scale-105">
-                        <Clock10 className="w-5 h-5" />
-                        Pedir Turno
-                    </button>
-                </Link>
-                <Link href="/entrada">
-                    <button className="bg-primary-brand hover:bg-primary-light text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-full px-8 py-4 flex items-center gap-3 text-lg font-bold transform hover:scale-105">
-                        <LogIn className="w-6 h-6" />
-                        Registrar Entrada
-                    </button>
-                </Link>
-            </div>
+            {canManage && (
+                <div className="fixed bottom-8 right-8 z-10 flex flex-col gap-4 items-end">
+                    <Link href="/">
+                        <button className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-amber-500/20 transition-all duration-300 rounded-full px-6 py-3 flex items-center gap-2 text-base font-bold transform hover:scale-105">
+                            <Clock10 className="w-5 h-5" />
+                            Pedir Turno
+                        </button>
+                    </Link>
+                    <Link href="/entrada">
+                        <button className="bg-primary-brand hover:bg-primary-light text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-full px-8 py-4 flex items-center gap-3 text-lg font-bold transform hover:scale-105">
+                            <LogIn className="w-6 h-6" />
+                            Registrar Entrada
+                        </button>
+                    </Link>
+                </div>
+            )}
 
         </div>
     )
