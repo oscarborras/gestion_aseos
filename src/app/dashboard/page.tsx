@@ -171,7 +171,7 @@ export default async function DashboardPage() {
                                         <div className="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 p-3 rounded-xl mt-4 shrink-0">
                                             <Clock10 className="w-4 h-4" />
                                             <ElapsedTimer startTime={aseo.ultimo_cambio} />
-                                            <span className="text-[10px] ml-auto font-medium text-red-400 uppercase tracking-wider">Transcurrido</span>
+                                            <span className="text-[10px] ml-auto font-medium text-red-400 uppercase tracking-wider"></span>
                                         </div>
                                     </>
                                 ) : (

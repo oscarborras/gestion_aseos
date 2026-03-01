@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { entregarTurno, entregarTurnoGrupo, anularTurno } from '../actions'
 import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser } from 'lucide-react'
 import { toast } from 'sonner'
@@ -34,6 +34,14 @@ export default function EntregarClient({
     const [cancelingId, setCancelingId] = useState<number | null>(null)
     // Estado del modal de confirmación
     const [pendingCancel, setPendingCancel] = useState<WaitingItem | null>(null)
+
+    // Auto-refrescar cada 5 segundos para ver nuevos turnos
+    useEffect(() => {
+        const interval = setInterval(() => {
+            router.refresh()
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [router])
 
     const handleCancelTurno = (item: WaitingItem) => {
         // Muestra el modal en lugar del confirm() nativo

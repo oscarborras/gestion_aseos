@@ -82,14 +82,6 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
                                         : 'bg-white dark:bg-slate-800 border-transparent hover:border-slate-200 dark:hover:border-slate-600'
                                         }`}
                                 >
-                                    <div className="absolute top-4 right-4">
-                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg">
-                                            <Timer className="w-4 h-4" />
-                                            <span className="text-xs font-bold font-mono">
-                                                {formatDistanceToNow(entradaTime, { locale: es })}
-                                            </span>
-                                        </div>
-                                    </div>
                                     <div className="flex items-start gap-4">
                                         <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary-brand text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
                                             <span className={`material-symbols-outlined text-3xl ${!isSelected && registro.aseos?.nombre.toLowerCase().includes('chicos') ? 'text-blue-500' : ''}`}>
@@ -109,8 +101,16 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className={`mt-4 pt-4 border-t flex items-center justify-between transition-opacity ${isSelected ? 'border-primary-brand/20 opacity-100' : 'border-slate-100 dark:border-slate-700 opacity-50 group-hover:opacity-100'}`}>
-                                        <span className="text-xs text-slate-400">Entrada: {entradaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    <div className={`mt-4 pt-4 border-t flex items-end justify-between transition-opacity ${isSelected ? 'border-primary-brand/20 opacity-100' : 'border-slate-100 dark:border-slate-700 opacity-50 group-hover:opacity-100'}`}>
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-md w-fit">
+                                                <Timer className="w-3 h-3" />
+                                                <span className="text-[10px] font-bold font-mono">
+                                                    {formatDistanceToNow(entradaTime, { locale: es })}
+                                                </span>
+                                            </div>
+                                            <span className="text-xs text-slate-400">Entrada: {entradaTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
                                         <span className={`text-sm font-semibold ${isSelected ? 'text-primary-brand underline' : 'text-primary-brand'}`}>
                                             {isSelected ? 'Seleccionado' : 'Seleccionar →'}
                                         </span>
