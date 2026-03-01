@@ -6,6 +6,8 @@ import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser } fr
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
+const REFRESH_INTERVAL_MS = 5000 // 10 segundos
+
 interface WaitingItem {
     id: number
     alumno_id: string
@@ -39,7 +41,7 @@ export default function EntregarClient({
     useEffect(() => {
         const interval = setInterval(() => {
             router.refresh()
-        }, 5000)
+        }, REFRESH_INTERVAL_MS)
         return () => clearInterval(interval)
     }, [router])
 

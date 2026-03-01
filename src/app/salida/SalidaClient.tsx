@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { CheckCircle, Timer, Info, Edit, Frown, Meh, Smile, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -9,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 type Registro = any
+const REFRESH_INTERVAL_MS = 10000 // 10 segundos
 
 export default function SalidaClient({ registros }: { registros: Registro[] }) {
     const router = useRouter()
@@ -24,6 +25,14 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
 
     const [selectedRegistro, setSelectedRegistro] = useState<Registro | null>(null)
     const [loading, setLoading] = useState(false)
+
+    // Auto-refrescar para ver cambios en los aseos ocupados
+    useEffect(() => {
+        const interval = setInterval(() => {
+            router.refresh()
+        }, REFRESH_INTERVAL_MS)
+        return () => clearInterval(interval)
+    }, [router])
 
     const handleSelect = (registro: Registro) => {
         setSelectedRegistro(registro)
