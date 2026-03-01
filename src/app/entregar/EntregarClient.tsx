@@ -5,8 +5,9 @@ import { entregarTurno, entregarTurnoGrupo, anularTurno } from '../actions'
 import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/utils/supabase/client'
 
-const REFRESH_INTERVAL_MS = 5000 // 10 segundos
+// Eliminamos la constante de polling ya que usaremos Supabase Realtime
 
 interface WaitingItem {
     id: number
@@ -37,12 +38,46 @@ export default function EntregarClient({
     // Estado del modal de confirmación
     const [pendingCancel, setPendingCancel] = useState<WaitingItem | null>(null)
 
-    // Auto-refrescar cada 5 segundos para ver nuevos turnos
+    // Configurar Supabase Realtime para actualizar la lista de entrega de forma reactiva
     useEffect(() => {
-        const interval = setInterval(() => {
-            router.refresh()
-        }, REFRESH_INTERVAL_MS)
-        return () => clearInterval(interval)
+        const supabase = createClient()
+
+        // Canal para lista de espera
+        const waitingChannel = supabase
+            .channel('db-waiting-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // INSERT, UPDATE, DELETE
+                    schema: 'public',
+                    table: 'lista_espera'
+                },
+                () => {
+                    router.refresh()
+                }
+            )
+            .subscribe()
+
+        // Canal para cambios en aseos (disponibilidad)
+        const aseosChannel = supabase
+            .channel('db-aseos-availability')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'aseos'
+                },
+                () => {
+                    router.refresh()
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(waitingChannel)
+            supabase.removeChannel(aseosChannel)
+        }
     }, [router])
 
     const handleCancelTurno = (item: WaitingItem) => {

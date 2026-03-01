@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react'
 import { CheckCircle, Timer, Info, Edit, Frown, Meh, Smile, Clock } from 'lucide-react'
+import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { registrarSalida } from '../actions'
@@ -9,7 +10,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 type Registro = any
-const REFRESH_INTERVAL_MS = 10000 // 10 segundos
+// Eliminamos la constante de polling ya que usaremos Supabase Realtime
 
 export default function SalidaClient({ registros }: { registros: Registro[] }) {
     const router = useRouter()
@@ -26,12 +27,29 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
     const [selectedRegistro, setSelectedRegistro] = useState<Registro | null>(null)
     const [loading, setLoading] = useState(false)
 
-    // Auto-refrescar para ver cambios en los aseos ocupados
+    // Configurar Supabase Realtime para actualizar la lista de forma reactiva
     useEffect(() => {
-        const interval = setInterval(() => {
-            router.refresh()
-        }, REFRESH_INTERVAL_MS)
-        return () => clearInterval(interval)
+        const supabase = createClient()
+
+        const channel = supabase
+            .channel('db-registros-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // Escuchar todo: INSERT (entrada), UPDATE (salida)
+                    schema: 'public',
+                    table: 'registros'
+                },
+                () => {
+                    // Refrescar los datos del servidor (Server Component)
+                    router.refresh()
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [router])
 
     const handleSelect = (registro: Registro) => {
