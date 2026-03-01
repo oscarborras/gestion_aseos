@@ -27,11 +27,19 @@ export default function LoginForm() {
             const roles = result.roles || []
             // Si tiene el rol profesor y no es admin ni directiva, lo mandamos a la lista de espera
             const isOnlyProfesor = roles.includes('Profesor') && !roles.includes('Admin') && !roles.includes('Directiva') && !roles.includes('Ordenanza')
+            // Si tiene el rol ordenanza
+            const isOrdenanza = roles.includes('Ordenanza')
+            // Si tiene el rol directiva
+            const isDirectiva = roles.includes('Directiva')
 
             if (isOnlyProfesor) {
                 window.location.href = '/lista-espera'
+            } else if (isOrdenanza) {
+                window.location.href = '/entregar'
+            } else if (isDirectiva) {
+                window.location.href = '/dashboard'
             } else {
-                window.location.href = '/mantenimiento'
+                window.location.href = '/'
             }
         }
     }
