@@ -60,9 +60,14 @@ export default function SolicitudClient({
         let matchesSearch = true
         if (searchQuery) {
             const normalizedSearch = normalize(searchQuery)
+            const searchWords = normalizedSearch.split(/\s+/).filter(word => word.length > 0)
             const normalizedName = normalize(a.alumno)
-            const words = normalizedName.split(/\s+/)
-            matchesSearch = words.some(word => word.startsWith(normalizedSearch))
+            const nameWords = normalizedName.split(/\s+/).filter(word => word.length > 0)
+
+            // Cada palabra de la búsqueda debe coincidir como prefijo de alguna palabra del nombre del alumno
+            matchesSearch = searchWords.every(searchWord =>
+                nameWords.some(nameWord => nameWord.startsWith(searchWord))
+            )
         }
         return matchesCurso && matchesSearch
     })
