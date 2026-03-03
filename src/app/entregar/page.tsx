@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import EntregarClient from '@/app/entregar/EntregarClient'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 import { checkPermission } from '@/lib/permissions'
 
