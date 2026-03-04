@@ -1,6 +1,9 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Clock, Users } from 'lucide-react'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface WaitingItem {
     id: number
@@ -16,6 +19,31 @@ export default function ListaEsperaViewClient({
 }: {
     waitingList: WaitingItem[]
 }) {
+    const router = useRouter()
+
+    useEffect(() => {
+        const supabase = createClient()
+
+        const channel = supabase
+            .channel('db-lista-espera-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // INSERT, UPDATE, DELETE
+                    schema: 'public',
+                    table: 'lista_espera'
+                },
+                () => {
+                    // Refrescar los datos del servidor para obtener la lista actualizada
+                    router.refresh()
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [router])
     // Listado separado por sexos
     const chicasWaiting = waitingList.filter(s => s.sexo?.toUpperCase() === 'M')
     const chicosWaiting = waitingList.filter(s => s.sexo?.toUpperCase() !== 'M')
