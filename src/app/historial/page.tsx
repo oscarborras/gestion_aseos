@@ -202,7 +202,7 @@ export default async function HistorialPage(props: {
                             <>
                                 <span>con estado</span>
                                 <span className={`bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold ${estadoFilter === 'Bueno' ? 'text-emerald-500' :
-                                        estadoFilter === 'Regular' ? 'text-amber-500' : 'text-red-500'
+                                    estadoFilter === 'Regular' ? 'text-amber-500' : 'text-red-500'
                                     }`}>
                                     {estadoFilter}
                                 </span>
@@ -273,8 +273,15 @@ export default async function HistorialPage(props: {
                                                 {registro.alumnos?.unidad}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-medium text-slate-700 dark:text-slate-300">
-                                                    {registro.aseos?.nombre}
+                                                <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${registro.aseos?.nombre?.includes('Chicos')
+                                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                                                    : registro.aseos?.nombre?.includes('Chicas')
+                                                        ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300'
+                                                        : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                                                    }`}>
+                                                    {registro.aseos?.nombre
+                                                        ?.replace('Planta Alta', 'P. ALTA')
+                                                        ?.replace('Planta Baja', 'P. BAJA')}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-slate-600 dark:text-slate-400">
