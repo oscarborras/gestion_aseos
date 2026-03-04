@@ -38,7 +38,7 @@ export default async function ListaEsperaPage() {
     }))
 
     return (
-        <div className="w-full max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
+        <div className="w-full max-w-6xl mx-auto px-4 py-8 md:py-0 space-y-8">
             <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-3 mb-2">

@@ -83,7 +83,7 @@ export default function SalidaClient({ registros }: { registros: Registro[] }) {
         <>
             <section className="flex flex-col w-full md:w-5/12 lg:w-4/12 h-full gap-4 shrink-0">
                 <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Aseos Ocupados</h2>
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Aseos Ocupados</h2>
                     <span className="text-xs font-bold px-2 py-1 bg-primary-brand/10 text-primary-brand rounded-lg uppercase tracking-wider">
                         En vivo
                     </span>

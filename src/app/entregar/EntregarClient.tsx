@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { entregarTurno, entregarTurnoGrupo, anularTurno } from '../actions'
-import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser } from 'lucide-react'
+import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser, History } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
@@ -35,12 +35,58 @@ export default function EntregarClient({
     const [assignedWaitIds, setAssignedWaitIds] = useState<number[]>([])
     const [loading, setLoading] = useState(false)
     const [cancelingId, setCancelingId] = useState<number | null>(null)
-    // Estado del modal de confirmación
     const [pendingCancel, setPendingCancel] = useState<WaitingItem | null>(null)
+    const [lastTakers, setLastTakers] = useState<Record<number, string[]>>({})
+
+    const availableAseos = aseos.filter(a => a.estado_id === 1)
+
+    // Función para obtener los últimos repartos para cada aseo
+    const fetchLastTakers = async () => {
+        const supabase = createClient()
+        // Obtenemos los últimos 40 registros para cubrir posibles grupos y todos los aseos
+        const { data } = await supabase
+            .from('registros')
+            .select('aseo_id, fecha_entrada, alumnos (alumno)')
+            .order('fecha_entrada', { ascending: false })
+            .limit(40)
+
+        if (!data) return
+
+        const newestByAseo: Record<number, { time: string, names: string[] }> = {}
+
+        data.forEach((reg: any) => {
+            const time = reg.fecha_entrada
+            const name = reg.alumnos?.alumno
+            if (!name) return
+
+            if (!newestByAseo[reg.aseo_id]) {
+                newestByAseo[reg.aseo_id] = { time, names: [name] }
+            } else {
+                // Si el registro está en la misma entrega (ventana de 3 segundos), lo añadimos al grupo
+                const newestTime = new Date(newestByAseo[reg.aseo_id].time).getTime()
+                const currentTime = new Date(time).getTime()
+                if (Math.abs(newestTime - currentTime) < 3000) {
+                    // Evitar duplicados por si acaso si es el mismo alumno 
+                    // (aunque el esquema permite el mismo alumno en distintos registros)
+                    if (!newestByAseo[reg.aseo_id].names.includes(name)) {
+                        newestByAseo[reg.aseo_id].names.push(name)
+                    }
+                }
+            }
+        })
+
+        const resultMap: Record<number, string[]> = {}
+        Object.entries(newestByAseo).forEach(([id, payload]) => {
+            resultMap[Number(id)] = payload.names
+        })
+        setLastTakers(resultMap)
+    }
 
     // Configurar Supabase Realtime para actualizar la lista de entrega de forma reactiva
     useEffect(() => {
         const supabase = createClient()
+
+        fetchLastTakers()
 
         // Canal para lista de espera
         const waitingChannel = supabase
@@ -64,7 +110,7 @@ export default function EntregarClient({
             .on(
                 'postgres_changes',
                 {
-                    event: 'UPDATE',
+                    event: '*',
                     schema: 'public',
                     table: 'aseos'
                 },
@@ -74,9 +120,26 @@ export default function EntregarClient({
             )
             .subscribe()
 
+        // Canal para cambios en registros (para los últimos alumnos)
+        const registrosChannel = supabase
+            .channel('db-registros-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'registros'
+                },
+                () => {
+                    fetchLastTakers()
+                }
+            )
+            .subscribe()
+
         return () => {
             supabase.removeChannel(waitingChannel)
             supabase.removeChannel(aseosChannel)
+            supabase.removeChannel(registrosChannel)
         }
     }, [router])
 
@@ -104,7 +167,7 @@ export default function EntregarClient({
     const initialAssignment = () => {
         for (const student of waitingList) {
             const isChica = student.sexo?.toUpperCase() === 'M'
-            const matchingAseo = aseos.find(a =>
+            const matchingAseo = availableAseos.find(a =>
                 isChica
                     ? a.nombre.toLowerCase().includes('chica')
                     : a.nombre.toLowerCase().includes('chico')
@@ -467,6 +530,52 @@ export default function EntregarClient({
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Nueva sección: Últimas personas por aseo */}
+            <div className="mt-8 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
+                <div className="flex items-center gap-2 mb-6 text-slate-400">
+                    <History className="w-5 h-5" />
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em]">Registro Última Entrega</h2>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {aseos.map(aseo => {
+                        // Abreviar nombre: Planta Alta Chicos -> PA Chicos
+                        const abbreviated = aseo.nombre
+                            .replace("Planta Alta", "P.Alta")
+                            .replace("Planta Baja", "P.Baja");
+                        const isChica = aseo.nombre.toLowerCase().includes('chica');
+                        const nameColorClass = isChica
+                            ? "text-pink-600 dark:text-pink-400"
+                            : "text-blue-600 dark:text-blue-400";
+
+                        return (
+                            <div
+                                key={aseo.id}
+                                className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-700/50 flex flex-col gap-1 group hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-colors"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${nameColorClass}`}>
+                                        {abbreviated}
+                                    </span>
+                                    <div className={`w-2 h-2 rounded-full ${aseo.estado_id === 1 ? 'bg-emerald-500' : aseo.estado_id === 2 ? 'bg-amber-500' : 'bg-red-500'}`} />
+                                </div>
+                                <div className="min-h-[1.5rem] flex flex-col justify-center">
+                                    {lastTakers[aseo.id] && lastTakers[aseo.id].length > 0 ? (
+                                        lastTakers[aseo.id].map((name, i) => (
+                                            <p key={i} className="text-sm font-bold text-slate-700 dark:text-slate-200 leading-tight">
+                                                {i + 1}. {name}
+                                            </p>
+                                        ))
+                                    ) : (
+                                        <p className="text-xs text-slate-400 italic">Sin registros recientes</p>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </>

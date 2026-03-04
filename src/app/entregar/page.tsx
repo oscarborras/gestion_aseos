@@ -27,11 +27,11 @@ export default async function EntregarPage() {
         .eq('estado', 'esperando')
         .order('fecha_solicitud', { ascending: true })
 
-    // 2. Obtener aseos disponibles
+    // 2. Obtener todos los aseos
     const { data: aseos } = await supabase
         .from('aseos')
         .select('*')
-        .eq('estado_id', 1) // 1 = Disponible
+        .order('id', { ascending: true })
 
     const waitingList = (waitingData || []).map((item: any) => ({
         id: item.id,
@@ -43,7 +43,7 @@ export default async function EntregarPage() {
     }))
 
     return (
-        <div className="w-full max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
+        <div className="w-full max-w-6xl mx-auto px-4 py-8 md:py-0 space-y-8">
             <header>
                 <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                     Gestión de Entrega de Llaves
