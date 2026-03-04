@@ -5,8 +5,9 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend, LineChart, Line
 } from 'recharts'
-import { Users, Clock, Calendar, BarChart3, TrendingUp, User, Search, X, ChevronRight, Award } from 'lucide-react'
 import { subDays, isAfter, parseISO } from 'date-fns'
+import Link from 'next/link'
+import { Users, Clock, Calendar, BarChart3, TrendingUp, User, Search, X, ChevronRight, Award, ExternalLink } from 'lucide-react'
 
 const COLORS = [
     'var(--chart-1)',
@@ -248,7 +249,16 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                     <User className="w-8 h-8 text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black">{studentStats.alumno.name}</h2>
+                                    <div className="flex items-center gap-3">
+                                        <h2 className="text-2xl font-black">{studentStats.alumno.name}</h2>
+                                        <Link
+                                            href={`/historial?alumno=${encodeURIComponent(studentStats.alumno.name)}&fecha=all`}
+                                            className="bg-white/10 hover:bg-white/20 transition-all px-3 py-1.5 rounded-xl text-white flex items-center gap-2 text-xs font-bold border border-white/20"
+                                        >
+                                            <ExternalLink className="w-3.5 h-3.5" />
+                                            <span>Ver historial</span>
+                                        </Link>
+                                    </div>
                                     <p className="text-indigo-100 font-bold uppercase tracking-widest text-xs flex items-center gap-2">
                                         <Award className="w-3 h-3" />
                                         {studentStats.alumno.unidad}
