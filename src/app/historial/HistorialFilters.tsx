@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CalendarDays, Users, Download, HelpCircle, ListFilter } from 'lucide-react'
+import { CalendarDays, Users, Download, HelpCircle, ListFilter, Search } from 'lucide-react'
 
 export default function HistorialFilters() {
     const router = useRouter()
@@ -10,6 +10,7 @@ export default function HistorialFilters() {
     const fecha = searchParams.get('fecha') || 'today'
     const curso = searchParams.get('curso') || ''
     const aseo = searchParams.get('aseo') || ''
+    const alumno = searchParams.get('alumno') || ''
     const pageSize = searchParams.get('pageSize') || '10'
 
     const handleFilterChange = (key: string, value: string) => {
@@ -26,6 +27,17 @@ export default function HistorialFilters() {
 
     return (
         <div className="flex flex-wrap items-center gap-3">
+            <div className="relative min-w-[200px]">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                    type="text"
+                    value={alumno}
+                    onChange={(e) => handleFilterChange('alumno', e.target.value)}
+                    placeholder="Buscar alumno..."
+                    className="w-full bg-white dark:bg-slate-800 pl-9 pr-4 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none"
+                />
+            </div>
+
             <div className="relative min-w-[160px]">
                 <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <select

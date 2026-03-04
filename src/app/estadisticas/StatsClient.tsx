@@ -6,6 +6,7 @@ import {
     PieChart, Pie, Cell, Legend, LineChart, Line
 } from 'recharts'
 import { Users, Clock, Calendar, BarChart3, TrendingUp, User, Search, X, ChevronRight, Award } from 'lucide-react'
+import { subDays, isAfter, parseISO } from 'date-fns'
 
 const COLORS = [
     'var(--chart-1)',
@@ -27,7 +28,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
         registros.forEach(reg => {
             if (reg.alumno_id && !alumnosMap[reg.alumno_id]) {
                 alumnosMap[reg.alumno_id] = {
-                    id: reg.alumno_id,
+                    id: String(reg.alumno_id),
                     name: reg.alumnos?.alumno || 'Desconocido',
                     unidad: reg.alumnos?.unidad || 'N/A'
                 };
@@ -49,7 +50,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
         if (!registros.length) return null;
 
         // 1. Uso por Alumno (Top 10)
-        const usagePerAlumno: Record<string, { name: string, count: number, unidad: string, totalDur: number, validDurCount: number }> = {};
+        const usagePerAlumno: Record<string, { id: string, name: string, count: number, unidad: string, totalDur: number, validDurCount: number }> = {};
         // 2. Uso por Unidad (Curso)
         const usagePerUnidad: Record<string, number> = {};
         // 3. Uso por Aseo
@@ -62,11 +63,11 @@ export default function StatsClient({ registros }: { registros: any[] }) {
 
         registros.forEach(reg => {
             // Per Alumno
-            const alumnoId = reg.alumno_id;
+            const alumnoId = String(reg.alumno_id);
             const alumnoName = reg.alumnos?.alumno || 'Desconocido';
             const unidad = reg.alumnos?.unidad || 'N/A';
             if (!usagePerAlumno[alumnoId]) {
-                usagePerAlumno[alumnoId] = { name: alumnoName, count: 0, unidad, totalDur: 0, validDurCount: 0 };
+                usagePerAlumno[alumnoId] = { id: alumnoId, name: alumnoName, count: 0, unidad, totalDur: 0, validDurCount: 0 };
             }
             usagePerAlumno[alumnoId].count++;
 
@@ -136,14 +137,15 @@ export default function StatsClient({ registros }: { registros: any[] }) {
         if (!alumno) return null;
 
         const now = new Date();
-        let filteredRegs = registros.filter(r => r.alumno_id === selectedAlumnoId);
+        const alumnoIdStr = String(selectedAlumnoId);
+        let filteredRegs = registros.filter(r => String(r.alumno_id) === alumnoIdStr);
 
         if (timeRange === 'week') {
-            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            filteredRegs = filteredRegs.filter(r => new Date(r.fecha_entrada) >= weekAgo);
+            const weekAgo = subDays(now, 7);
+            filteredRegs = filteredRegs.filter(r => isAfter(new Date(r.fecha_entrada), weekAgo));
         } else if (timeRange === 'month') {
-            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-            filteredRegs = filteredRegs.filter(r => new Date(r.fecha_entrada) >= monthAgo);
+            const monthAgo = subDays(now, 30);
+            filteredRegs = filteredRegs.filter(r => isAfter(new Date(r.fecha_entrada), monthAgo));
         }
 
         const usagePerAseo: Record<string, number> = {};
@@ -260,8 +262,8 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                         key={range}
                                         onClick={() => setTimeRange(range)}
                                         className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${timeRange === range
-                                                ? 'bg-white text-indigo-600 shadow-sm'
-                                                : 'text-white hover:bg-white/10'
+                                            ? 'bg-white text-indigo-600 shadow-sm'
+                                            : 'text-white hover:bg-white/10'
                                             }`}
                                     >
                                         {range === 'week' ? '7 días' : range === 'month' ? '30 días' : 'Total'}
@@ -355,13 +357,20 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                     </div>
                     <div className="space-y-3 flex-1">
                         {stats.topAlumnos.map((a, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+                            <button
+                                key={i}
+                                onClick={() => {
+                                    setSelectedAlumnoId(a.id);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-primary-brand/20"
+                            >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500 border border-slate-200 dark:border-slate-700">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500 border border-slate-200 dark:border-slate-700 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors">
                                         {i + 1}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary-brand transition-colors">{a.name}</p>
+                                        <p className="font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary-brand transition-colors underline-offset-4 group-hover:underlineDecoration-primary-brand/30">{a.name}</p>
                                         <p className="text-[10px] uppercase font-bold text-slate-400 mt-1">{a.unidad}</p>
                                     </div>
                                 </div>
@@ -377,8 +386,9 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                         <div className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Usos</div>
                                         <div className="text-lg font-black text-slate-900 dark:text-white">{a.count}</div>
                                     </div>
+                                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-primary-brand transition-all transform group-hover:translate-x-1" />
                                 </div>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </div>

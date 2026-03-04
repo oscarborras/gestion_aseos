@@ -21,6 +21,7 @@ export default async function HistorialPage(props: {
     const fechaFilter = (searchParams.fecha as string) || 'today'
     const cursoFilter = (searchParams.curso as string) || ''
     const aseoFilter = (searchParams.aseo as string) || ''
+    const alumnoFilter = (searchParams.alumno as string) || ''
     const page = Math.max(1, parseInt((searchParams.page as string) || '1', 10))
     const pageSize = [10, 25, 50].includes(parseInt((searchParams.pageSize as string) || '10', 10))
         ? parseInt((searchParams.pageSize as string) || '10', 10)
@@ -57,7 +58,7 @@ export default async function HistorialPage(props: {
         estado_salida,
         observaciones_salida,
         aseos${aseoFilter ? '!inner' : ''} ( nombre ),
-        alumnos${cursoFilter ? '!inner' : ''} ( alumno, unidad )
+        alumnos${(cursoFilter || alumnoFilter) ? '!inner' : ''} ( alumno, unidad )
     `
 
     // Query para contar el total de registros (sin paginar)
@@ -65,7 +66,7 @@ export default async function HistorialPage(props: {
         id,
         fecha_salida,
         aseos${aseoFilter ? '!inner' : ''} ( nombre ),
-        alumnos${cursoFilter ? '!inner' : ''} ( unidad )
+        alumnos${(cursoFilter || alumnoFilter) ? '!inner' : ''} ( unidad )
     `
     let countQuery = supabase
         .from('registros')
@@ -75,6 +76,12 @@ export default async function HistorialPage(props: {
     if (dateGte) countQuery = countQuery.gte('fecha_entrada', dateGte)
     if (dateLt) countQuery = countQuery.lt('fecha_entrada', dateLt)
     if (cursoFilter) countQuery = countQuery.ilike('alumnos.unidad', `%${cursoFilter}%`)
+    if (alumnoFilter) {
+        const searchWords = alumnoFilter.split(/\s+/).filter(w => w.length > 0)
+        searchWords.forEach(word => {
+            countQuery = countQuery.ilike('alumnos.alumno', `%${word}%`)
+        })
+    }
     if (aseoFilter) countQuery = countQuery.eq('aseos.nombre', aseoFilter)
 
     const { count: totalCount } = await countQuery
@@ -94,8 +101,14 @@ export default async function HistorialPage(props: {
     if (dateLt) query = query.lt('fecha_entrada', dateLt)
 
     if (cursoFilter) {
-        // En Supabase, filtrar por una columna de una tabla unida se hace con 'tabla.columna'
         query = query.ilike('alumnos.unidad', `%${cursoFilter}%`)
+    }
+
+    if (alumnoFilter) {
+        const searchWords = alumnoFilter.split(/\s+/).filter(w => w.length > 0)
+        searchWords.forEach(word => {
+            query = query.ilike('alumnos.alumno', `%${word}%`)
+        })
     }
 
     if (aseoFilter) {
@@ -173,6 +186,12 @@ export default async function HistorialPage(props: {
                                 <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-primary-brand font-bold">{cursoFilter}</span>
                             </>
                         )}
+                        {alumnoFilter && (
+                            <>
+                                <span>para</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-primary-brand font-bold">"{alumnoFilter}"</span>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -190,6 +209,7 @@ export default async function HistorialPage(props: {
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700">Alumno</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Curso</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Aseo</th>
+                                <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Fecha</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Entrada</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Salida</th>
                                 <th className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 text-center">Duración</th>
@@ -200,7 +220,7 @@ export default async function HistorialPage(props: {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                             {!registros || registros.length === 0 ? (
                                 <tr>
-                                    <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan={9} className="px-6 py-12 text-center text-slate-500">
                                         <div className="flex flex-col items-center gap-2">
                                             <CalendarDays className="w-10 h-10 opacity-20" />
                                             <p>No se encontraron registros con los filtros seleccionados.</p>
@@ -241,11 +261,14 @@ export default async function HistorialPage(props: {
                                                     {registro.aseos?.nombre}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-slate-600 dark:text-slate-400">
-                                                {format(entrada, 'HH:mm:ss')}
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-slate-600 dark:text-slate-400">
+                                                {format(entrada, 'dd/MM')}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-slate-600 dark:text-slate-400">
-                                                {format(salida, 'HH:mm:ss')}
+                                                {format(entrada, 'HH:mm')}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-slate-600 dark:text-slate-400">
+                                                {format(salida, 'HH:mm')}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-primary-brand dark:text-primary-light">
                                                 {duracion}
