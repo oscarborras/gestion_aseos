@@ -265,8 +265,52 @@ export default function EntregarClient({
         }
     }
 
+    const getAbbreviatedName = (name: string) => {
+        return name
+            .replace("Planta Alta", "P.Alta")
+            .replace("Planta Baja", "P.Baja");
+    }
+
     return (
         <>
+            {/* Fila superior: Estado de los aseos en tiempo real */}
+            <div className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+                {aseos.map(aseo => {
+                    const abbreviated = getAbbreviatedName(aseo.nombre);
+                    const isChica = aseo.nombre.toLowerCase().includes('chica');
+                    const nameColorClass = isChica
+                        ? "text-pink-600 dark:text-pink-400"
+                        : "text-blue-600 dark:text-blue-400";
+
+                    const isLibre = aseo.estado_id === 1;
+                    const isOcupado = aseo.estado_id === 2;
+                    const isMantenimiento = aseo.estado_id === 3;
+
+                    return (
+                        <div
+                            key={`status-${aseo.id}`}
+                            className={`p-3 rounded-2xl border transition-all duration-300 flex flex-col items-center justify-center gap-1 shadow-sm
+                                ${isLibre
+                                    ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30'
+                                    : isOcupado
+                                        ? 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30'
+                                        : 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
+                                }`}
+                        >
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${nameColorClass}`}>
+                                {abbreviated}
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full animate-pulse ${isLibre ? 'bg-emerald-500' : isOcupado ? 'bg-amber-500' : 'bg-red-500'}`} />
+                                <span className={`text-xs font-bold ${isLibre ? 'text-emerald-600' : isOcupado ? 'text-amber-600' : 'text-red-600'}`}>
+                                    {isLibre ? 'LIBRE' : isOcupado ? 'OCUPADO' : 'MANT.'}
+                                </span>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
             {/* Modal de confirmación de anulación */}
             {pendingCancel && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -543,9 +587,7 @@ export default function EntregarClient({
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {aseos.map(aseo => {
                         // Abreviar nombre: Planta Alta Chicos -> PA Chicos
-                        const abbreviated = aseo.nombre
-                            .replace("Planta Alta", "P.Alta")
-                            .replace("Planta Baja", "P.Baja");
+                        const abbreviated = getAbbreviatedName(aseo.nombre);
                         const isChica = aseo.nombre.toLowerCase().includes('chica');
                         const nameColorClass = isChica
                             ? "text-pink-600 dark:text-pink-400"
