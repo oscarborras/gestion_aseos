@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CalendarDays, Users, Download, HelpCircle, ListFilter, Search } from 'lucide-react'
+import { CalendarDays, Users, Download, HelpCircle, ListFilter, Search, Smile } from 'lucide-react'
 
 export default function HistorialFilters() {
     const router = useRouter()
@@ -10,6 +10,7 @@ export default function HistorialFilters() {
     const fecha = searchParams.get('fecha') || 'today'
     const curso = searchParams.get('curso') || ''
     const aseo = searchParams.get('aseo') || ''
+    const estado = searchParams.get('estado') || ''
     const alumno = searchParams.get('alumno') || ''
     const pageSize = searchParams.get('pageSize') || '10'
 
@@ -84,6 +85,20 @@ export default function HistorialFilters() {
                     <option value="Planta Baja Chicos">Planta Baja Chicos</option>
                     <option value="Planta Alta Chicas">Planta Alta Chicas</option>
                     <option value="Planta Alta Chicos">Planta Alta Chicos</option>
+                </select>
+            </div>
+
+            <div className="relative min-w-[160px]">
+                <Smile className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <select
+                    value={estado}
+                    onChange={(e) => handleFilterChange('estado', e.target.value)}
+                    className="w-full bg-white dark:bg-slate-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none cursor-pointer"
+                >
+                    <option value="">Todos los estados</option>
+                    <option value="Bueno">Buen estado</option>
+                    <option value="Regular">Estado regular</option>
+                    <option value="Malo">Mal estado</option>
                 </select>
             </div>
 

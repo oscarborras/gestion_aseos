@@ -21,6 +21,7 @@ export default async function HistorialPage(props: {
     const fechaFilter = (searchParams.fecha as string) || 'today'
     const cursoFilter = (searchParams.curso as string) || ''
     const aseoFilter = (searchParams.aseo as string) || ''
+    const estadoFilter = (searchParams.estado as string) || ''
     const alumnoFilter = (searchParams.alumno as string) || ''
     const page = Math.max(1, parseInt((searchParams.page as string) || '1', 10))
     const pageSize = [10, 25, 50].includes(parseInt((searchParams.pageSize as string) || '10', 10))
@@ -83,6 +84,7 @@ export default async function HistorialPage(props: {
         })
     }
     if (aseoFilter) countQuery = countQuery.eq('aseos.nombre', aseoFilter)
+    if (estadoFilter) countQuery = countQuery.eq('estado_salida', estadoFilter)
 
     const { count: totalCount } = await countQuery
     const totalRegistros = totalCount || 0
@@ -113,6 +115,10 @@ export default async function HistorialPage(props: {
 
     if (aseoFilter) {
         query = query.eq('aseos.nombre', aseoFilter)
+    }
+
+    if (estadoFilter) {
+        query = query.eq('estado_salida', estadoFilter)
     }
 
     const { data: registros, error } = await query
@@ -190,6 +196,16 @@ export default async function HistorialPage(props: {
                             <>
                                 <span>para</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-primary-brand font-bold">"{alumnoFilter}"</span>
+                            </>
+                        )}
+                        {estadoFilter && (
+                            <>
+                                <span>con estado</span>
+                                <span className={`bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold ${estadoFilter === 'Bueno' ? 'text-emerald-500' :
+                                        estadoFilter === 'Regular' ? 'text-amber-500' : 'text-red-500'
+                                    }`}>
+                                    {estadoFilter}
+                                </span>
                             </>
                         )}
                     </div>
