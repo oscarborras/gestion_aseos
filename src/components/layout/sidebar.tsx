@@ -12,7 +12,7 @@ const routes = [
         href: '/',
         color: 'text-amber-500',
         activeColor: 'bg-amber-500/10 text-amber-500',
-        roles: ['Admin', 'Directiva', 'Public']
+        roles: ['Admin', 'Directiva', 'Public', 'Alumnado']
     },
     {
         label: 'Entregar llave',
@@ -28,7 +28,7 @@ const routes = [
         href: '/salida',
         color: 'text-rose-500',
         activeColor: 'bg-rose-500/10 text-rose-500',
-        roles: ['Admin', 'Directiva', 'Ordenanza', 'Public']
+        roles: ['Admin', 'Directiva', 'Ordenanza', 'Public', 'Alumnado']
     },
     {
         label: 'Lista de Espera',
@@ -264,7 +264,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                             </div>
                         </Link>
                     )}
-                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.7.1</span>
+                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.8.0</span>
                 </div>
             </aside>
         </>

@@ -1,12 +1,12 @@
 import { getUserRoles } from "@/app/actions";
 import { redirect } from "next/navigation";
 
-export type Role = 'Admin' | 'Ordenanza' | 'Directiva' | 'Profesor' | 'Public';
+export type Role = 'Admin' | 'Ordenanza' | 'Directiva' | 'Profesor' | 'Public' | 'Alumnado';
 
 const PERMISSIONS: Record<string, Role[]> = {
-    '/': ['Admin', 'Directiva', 'Public'],
+    '/': ['Admin', 'Directiva', 'Public', 'Alumnado'],
     '/entregar': ['Admin', 'Directiva', 'Ordenanza'],
-    '/salida': ['Admin', 'Directiva', 'Ordenanza', 'Public'],
+    '/salida': ['Admin', 'Directiva', 'Ordenanza', 'Public', 'Alumnado'],
     '/dashboard': ['Admin', 'Directiva', 'Ordenanza'],
     '/entrada': ['Admin', 'Directiva'],
     '/historial': ['Admin', 'Directiva', 'Ordenanza'],
