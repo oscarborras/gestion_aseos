@@ -146,6 +146,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                                     <Link
                                         href={route.href}
                                         key={route.href}
+                                        onClick={onClose}
                                         className={cn(
                                             'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-2 mt-2',
                                             'bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
@@ -163,6 +164,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                                     <Link
                                         href={route.href}
                                         key={route.href}
+                                        onClick={onClose}
                                         className={cn(
                                             'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-2',
                                             'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
@@ -180,6 +182,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                                     <Link
                                         href={route.href}
                                         key={route.href}
+                                        onClick={onClose}
                                         className={cn(
                                             'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-4',
                                             'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
@@ -197,6 +200,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                                     <Link
                                         href={route.href}
                                         key={route.href}
+                                        onClick={onClose}
                                         className={cn(
                                             'flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all mb-2',
                                             'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 transform hover:scale-[1.02] active:scale-[0.98]'
@@ -212,6 +216,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                                 <Link
                                     href={route.href}
                                     key={route.href}
+                                    onClick={onClose}
                                     className={cn(
                                         'flex items-center gap-3 px-3 py-3 rounded-lg font-medium transition-colors',
                                         isActive
@@ -249,7 +254,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                             </form>
                         </div>
                     ) : (
-                        <Link href="/login" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors group">
+                        <Link href="/login" onClick={onClose} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors group">
                             <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-500 group-hover:bg-primary-brand/10 group-hover:text-primary-brand transition-colors">
                                 <LogIn className="w-4 h-4" />
                             </div>
@@ -259,7 +264,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                             </div>
                         </Link>
                     )}
-                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.7.0</span>
+                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.7.1</span>
                 </div>
             </aside>
         </>
