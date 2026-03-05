@@ -28,6 +28,12 @@ export default async function ListaEsperaPage() {
         .eq('estado', 'esperando')
         .order('fecha_solicitud', { ascending: true })
 
+    // 2. Obtener todos los aseos
+    const { data: aseos } = await supabase
+        .from('aseos')
+        .select('*')
+        .order('id', { ascending: true })
+
     const waitingList = (waitingData || []).map((item: any) => ({
         id: item.id,
         alumno_id: item.alumno_id,
@@ -61,6 +67,7 @@ export default async function ListaEsperaPage() {
 
             <ListaEsperaViewClient
                 waitingList={waitingList}
+                aseos={aseos || []}
             />
         </div>
     )

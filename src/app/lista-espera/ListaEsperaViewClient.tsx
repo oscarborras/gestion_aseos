@@ -14,17 +14,31 @@ interface WaitingItem {
     fecha: string
 }
 
+interface Aseo {
+    id: number
+    nombre: string
+    estado_id: number
+}
+
 export default function ListaEsperaViewClient({
-    waitingList
+    waitingList,
+    aseos
 }: {
-    waitingList: WaitingItem[]
+    waitingList: WaitingItem[],
+    aseos: Aseo[]
 }) {
     const router = useRouter()
+
+    const getAbbreviatedName = (name: string) => {
+        return name
+            .replace("Planta Alta", "P.Alta")
+            .replace("Planta Baja", "P.Baja");
+    }
 
     useEffect(() => {
         const supabase = createClient()
 
-        const channel = supabase
+        const waitingChannel = supabase
             .channel('db-lista-espera-changes')
             .on(
                 'postgres_changes',
@@ -40,8 +54,24 @@ export default function ListaEsperaViewClient({
             )
             .subscribe()
 
+        const aseosChannel = supabase
+            .channel('db-aseos-status')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'aseos'
+                },
+                () => {
+                    router.refresh()
+                }
+            )
+            .subscribe()
+
         return () => {
-            supabase.removeChannel(channel)
+            supabase.removeChannel(waitingChannel)
+            supabase.removeChannel(aseosChannel)
         }
     }, [router])
     // Listado separado por sexos
@@ -49,81 +79,121 @@ export default function ListaEsperaViewClient({
     const chicosWaiting = waitingList.filter(s => s.sexo?.toUpperCase() !== 'M')
 
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-full">
-            <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
-                <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-indigo-500" />
-                    <h2 className="font-bold text-slate-800 dark:text-white text-lg">Cola de Espera Actual</h2>
-                </div>
-                <span className="text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 px-3 py-1 rounded-full">
-                    {waitingList.length} Personas
-                </span>
+        <div className="space-y-8">
+            {/* Fila superior: Estado de los aseos en tiempo real */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {aseos.map(aseo => {
+                    const abbreviated = getAbbreviatedName(aseo.nombre);
+                    const isChica = aseo.nombre.toLowerCase().includes('chica');
+                    const nameColorClass = isChica
+                        ? "text-pink-600 dark:text-pink-400"
+                        : "text-blue-600 dark:text-blue-400";
+
+                    const isLibre = aseo.estado_id === 1;
+                    const isOcupado = aseo.estado_id === 2;
+                    const isMantenimiento = aseo.estado_id === 3;
+
+                    return (
+                        <div
+                            key={`status-${aseo.id}`}
+                            className={`p-3 rounded-2xl border transition-all duration-300 flex flex-col items-center justify-center gap-1 shadow-sm
+                                ${isLibre
+                                    ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30'
+                                    : isOcupado
+                                        ? 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30'
+                                        : 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
+                                }`}
+                        >
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${nameColorClass}`}>
+                                {abbreviated}
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full animate-pulse ${isLibre ? 'bg-emerald-500' : isOcupado ? 'bg-amber-500' : 'bg-red-500'}`} />
+                                <span className={`text-xs font-bold ${isLibre ? 'text-emerald-600' : isOcupado ? 'text-amber-600' : 'text-red-600'}`}>
+                                    {isLibre ? 'LIBRE' : isOcupado ? 'OCUPADO' : 'MANT.'}
+                                </span>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800 last:border-b-0">
-                {/* Columna Chicas */}
-                <div className="flex flex-col h-full min-h-[400px]">
-                    <div className="p-4 bg-pink-500/5 border-b border-slate-50 dark:border-slate-800">
-                        <h3 className="text-sm font-black text-pink-600 dark:text-pink-400 uppercase tracking-widest flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-pink-500" />
-                            Chicas ({chicasWaiting.length})
-                        </h3>
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-full">
+                <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+                    <div className="flex items-center gap-2">
+                        <Users className="w-5 h-5 text-indigo-500" />
+                        <h2 className="font-bold text-slate-800 dark:text-white text-lg">Cola de Espera Actual</h2>
                     </div>
-                    <div className="p-2 space-y-1 overflow-y-auto">
-                        {chicasWaiting.length === 0 ? (
-                            <p className="p-12 text-center text-sm text-slate-400 italic font-medium">No hay chicas esperando</p>
-                        ) : (
-                            chicasWaiting.map((item, index) => (
-                                <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-900/20 flex items-center justify-center text-xs font-bold text-pink-600">
-                                            {index + 1}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white">{item.nombre}</p>
-                                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">{item.unidad}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
-                                        <Clock className="w-3.5 h-3.5" />
-                                        {new Date(item.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                    <span className="text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 px-3 py-1 rounded-full">
+                        {waitingList.length} Personas
+                    </span>
                 </div>
 
-                {/* Columna Chicos */}
-                <div className="flex flex-col h-full min-h-[400px]">
-                    <div className="p-4 bg-blue-500/5 border-b border-slate-50 dark:border-slate-800">
-                        <h3 className="text-sm font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-blue-500" />
-                            Chicos ({chicosWaiting.length})
-                        </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800 last:border-b-0">
+                    {/* Columna Chicas */}
+                    <div className="flex flex-col h-full min-h-[400px]">
+                        <div className="p-4 bg-pink-500/5 border-b border-slate-50 dark:border-slate-800">
+                            <h3 className="text-sm font-black text-pink-600 dark:text-pink-400 uppercase tracking-widest flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-pink-500" />
+                                Chicas ({chicasWaiting.length})
+                            </h3>
+                        </div>
+                        <div className="p-2 space-y-1 overflow-y-auto">
+                            {chicasWaiting.length === 0 ? (
+                                <p className="p-12 text-center text-sm text-slate-400 italic font-medium">No hay chicas esperando</p>
+                            ) : (
+                                chicasWaiting.map((item, index) => (
+                                    <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-900/20 flex items-center justify-center text-xs font-bold text-pink-600">
+                                                {index + 1}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{item.nombre}</p>
+                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">{item.unidad}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            {new Date(item.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
-                    <div className="p-2 space-y-1 overflow-y-auto">
-                        {chicosWaiting.length === 0 ? (
-                            <p className="p-12 text-center text-sm text-slate-400 italic font-medium">No hay chicos esperando</p>
-                        ) : (
-                            chicosWaiting.map((item, index) => (
-                                <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center text-xs font-bold text-blue-600">
-                                            {index + 1}
+
+                    {/* Columna Chicos */}
+                    <div className="flex flex-col h-full min-h-[400px]">
+                        <div className="p-4 bg-blue-500/5 border-b border-slate-50 dark:border-slate-800">
+                            <h3 className="text-sm font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                Chicos ({chicosWaiting.length})
+                            </h3>
+                        </div>
+                        <div className="p-2 space-y-1 overflow-y-auto">
+                            {chicosWaiting.length === 0 ? (
+                                <p className="p-12 text-center text-sm text-slate-400 italic font-medium">No hay chicos esperando</p>
+                            ) : (
+                                chicosWaiting.map((item, index) => (
+                                    <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center text-xs font-bold text-blue-600">
+                                                {index + 1}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{item.nombre}</p>
+                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">{item.unidad}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white">{item.nombre}</p>
-                                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">{item.unidad}</p>
+                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            {new Date(item.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
-                                        <Clock className="w-3.5 h-3.5" />
-                                        {new Date(item.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                </div>
-                            ))
-                        )}
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
