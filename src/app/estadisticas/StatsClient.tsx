@@ -28,6 +28,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
     const [timeRange, setTimeRange] = useState<'week' | 'month' | 'total'>('total');
     const [globalTimeRange, setGlobalTimeRange] = useState<'today' | 'yesterday' | 'week' | 'month' | 'total' | 'custom'>('total');
     const [customDate, setCustomDate] = useState<string>('');
+    const [franjaGenderFilter, setFranjaGenderFilter] = useState<'total' | 'M' | 'F'>('total');
 
     const filteredRegistrosGlobal = useMemo(() => {
         if (globalTimeRange === 'total') return registros;
@@ -102,6 +103,8 @@ export default function StatsClient({ registros }: { registros: any[] }) {
         // 5. Duración media
         let totalDurationMs = 0;
         let validDurationCount = 0;
+        // 6. Estado de los Aseos
+        const usagePerEstado: Record<string, number> = { 'Bueno': 0, 'Regular': 0, 'Malo': 0 };
 
         filteredRegistrosGlobal.forEach(reg => {
             // Per Alumno
@@ -124,6 +127,11 @@ export default function StatsClient({ registros }: { registros: any[] }) {
             const sexo = reg.alumnos?.sexo?.toUpperCase();
             if (sexo === 'M') usagePerSexo['Chicas']++;
             else usagePerSexo['Chicos']++;
+
+            // Per Estado
+            if (reg.estado_salida && usagePerEstado[reg.estado_salida] !== undefined) {
+                usagePerEstado[reg.estado_salida]++;
+            }
 
             // Duration
             if (reg.fecha_salida && reg.fecha_entrada) {
@@ -170,19 +178,51 @@ export default function StatsClient({ registros }: { registros: any[] }) {
             ? Math.round(totalDurationMs / validDurationCount / 60000 * 10) / 10
             : 0;
 
-        // 6. Estado de los Aseos
-        const usagePerEstado: Record<string, number> = { 'Bueno': 0, 'Regular': 0, 'Malo': 0 };
-        filteredRegistrosGlobal.forEach(reg => {
-            if (reg.estado_salida && usagePerEstado[reg.estado_salida] !== undefined) {
-                usagePerEstado[reg.estado_salida]++;
-            }
-        });
-
         const statusData = Object.entries(usagePerEstado).map(([name, value]) => ({
             name,
             value,
             percentage: filteredRegistrosGlobal.length > 0 ? Math.round((value / filteredRegistrosGlobal.length) * 100) : 0
         }));
+
+        // 7. Franjas Horarias
+        const franjas = [
+            { id: '1ª hora', start: { h: 8, m: 15 }, end: { h: 9, m: 14 } },
+            { id: '2ª hora', start: { h: 9, m: 15 }, end: { h: 10, m: 14 } },
+            { id: '3ª hora', start: { h: 10, m: 15 }, end: { h: 11, m: 14 } },
+            { id: '4ª hora', start: { h: 11, m: 45 }, end: { h: 12, m: 44 } },
+            { id: '5ª hora', start: { h: 12, m: 45 }, end: { h: 13, m: 44 } },
+            { id: '6ª hora', start: { h: 13, m: 45 }, end: { h: 14, m: 45 } },
+        ];
+
+        const franjaUsage = {
+            total: { '1ª hora': 0, '2ª hora': 0, '3ª hora': 0, '4ª hora': 0, '5ª hora': 0, '6ª hora': 0 },
+            M: { '1ª hora': 0, '2ª hora': 0, '3ª hora': 0, '4ª hora': 0, '5ª hora': 0, '6ª hora': 0 },
+            F: { '1ª hora': 0, '2ª hora': 0, '3ª hora': 0, '4ª hora': 0, '5ª hora': 0, '6ª hora': 0 }
+        };
+
+        filteredRegistrosGlobal.forEach(reg => {
+            const date = toZonedTime(new Date(reg.fecha_entrada), MADRID_TZ);
+            const h = date.getHours();
+            const m = date.getMinutes();
+            const timeVal = h * 60 + m;
+            const sexo = reg.alumnos?.sexo?.toUpperCase() === 'M' ? 'F' : 'M'; // Corregir mapeo invertido del sistema
+
+            franjas.forEach(f => {
+                const startVal = f.start.h * 60 + f.start.m;
+                const endVal = f.end.h * 60 + f.end.m;
+                if (timeVal >= startVal && timeVal <= endVal) {
+                    franjaUsage.total[f.id as keyof typeof franjaUsage.total]++;
+                    if (sexo === 'M') franjaUsage.M[f.id as keyof typeof franjaUsage.M]++;
+                    if (sexo === 'F') franjaUsage.F[f.id as keyof typeof franjaUsage.F]++;
+                }
+            });
+        });
+
+        const franjaData = {
+            total: Object.entries(franjaUsage.total).map(([name, value]) => ({ name, value })),
+            M: Object.entries(franjaUsage.M).map(([name, value]) => ({ name, value })),
+            F: Object.entries(franjaUsage.F).map(([name, value]) => ({ name, value }))
+        };
 
         return {
             topAlumnos,
@@ -190,6 +230,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
             aseoData,
             sexoData,
             statusData,
+            franjaData,
             totalUsos: filteredRegistrosGlobal.length,
             avgDurationMin
         };
@@ -540,31 +581,107 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {/* Gráfico de Aseos */}
+                        {/* Estado de los Aseos */}
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Uso de Aseos</h2>
-                            <div className="h-90 w-full">
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Estado de los Aseos (Salida)</h2>
+                            <div className="space-y-4 py-4">
+                                {stats.statusData.map(item => {
+                                    const color = item.name === 'Bueno' ? 'bg-emerald-500' : item.name === 'Regular' ? 'bg-amber-500' : 'bg-red-500';
+
+                                    return (
+                                        <div key={item.name} className="space-y-1">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-semibold text-slate-700 dark:text-slate-300">{item.name}</span>
+                                                <span className="font-bold text-slate-900 dark:text-white">{item.percentage}%</span>
+                                            </div>
+                                            <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                <div className={`h-full ${color}`} style={{ width: `${item.percentage}%` }} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-20 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl flex items-center gap-3">
+                                <User className="w-6 h-6 text-indigo-600" />
+                                <p className="text-xs text-indigo-700 dark:text-indigo-400 font-medium">
+                                    Los datos reflejan exclusivamente registros con salida completada en el periodo seleccionado.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Gráfico de Franjas Horarias */}
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm md:col-span-2">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <Clock className="w-5 h-5 text-indigo-500" />
+                                    Uso por Franjas Horarias
+                                </h2>
+                                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                                    <button
+                                        onClick={() => setFranjaGenderFilter('total')}
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${franjaGenderFilter === 'total' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}
+                                    >Total</button>
+                                    <button
+                                        onClick={() => setFranjaGenderFilter('M')}
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${franjaGenderFilter === 'M' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500'}`}
+                                    >Chicos</button>
+                                    <button
+                                        onClick={() => setFranjaGenderFilter('F')}
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${franjaGenderFilter === 'F' ? 'bg-pink-500 text-white shadow-sm' : 'text-slate-500'}`}
+                                    >Chicas</button>
+                                </div>
+                            </div>
+
+                            <div className="h-80 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={stats.aseoData}
-                                            innerRadius={60}
-                                            outerRadius={80}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                            cx="50%"
-                                            cy="45%"
-                                            label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
-                                        >
-                                            {stats.aseoData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                    <BarChart
+                                        data={stats.franjaData[franjaGenderFilter]}
+                                        margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
+                                        <XAxis
+                                            dataKey="name"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            style={{ fontSize: '11px', fontWeight: 600, fill: '#64748B' }}
                                         />
-                                        <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ paddingTop: '10px' }} />
-                                    </PieChart>
+                                        <YAxis hide />
+                                        <Tooltip
+                                            cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                                            content={({ active, payload }) => {
+                                                if (active && payload && payload.length) {
+                                                    const val = payload[0].value as number;
+                                                    const currentData = stats.franjaData[franjaGenderFilter];
+                                                    const totalForFilter = currentData.reduce((a, b) => a + b.value, 0);
+                                                    const pct = totalForFilter > 0 ? ((val / totalForFilter) * 100).toFixed(1) : 0;
+                                                    return (
+                                                        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 shadow-xl">
+                                                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{payload[0].payload.name}</p>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <span className="text-lg font-black text-slate-900 dark:text-white">{val}</span>
+                                                                <span className="text-xs font-bold text-indigo-500">{pct}%</span>
+                                                            </div>
+                                                            <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold">Registros totales</p>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }}
+                                        />
+                                        <Bar
+                                            dataKey="value"
+                                            radius={[6, 6, 0, 0]}
+                                            barSize={40}
+                                        >
+                                            {stats.franjaData[franjaGenderFilter].map((entry, index) => (
+                                                <Cell
+                                                    key={`cell-${index}`}
+                                                    fill={franjaGenderFilter === 'F' ? '#ec4899' : franjaGenderFilter === 'M' ? '#4f46e5' : 'var(--color-primary-brand)'}
+                                                />
+                                            ))}
+                                            <LabelList dataKey="value" position="top" style={{ fill: '#64748B', fontWeight: 800, fontSize: '12px' }} offset={10} />
+                                        </Bar>
+                                    </BarChart>
                                 </ResponsiveContainer>
                             </div>
                         </div>
@@ -598,31 +715,32 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                             </div>
                         </div>
 
-                        {/* Evolución Temporal (Dummy logic for now based on recent records) */}
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm col-span-1 md:col-span-2 lg:col-span-1">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Estado de los Aseos (Salida)</h2>
-                            <div className="space-y-4 py-4">
-                                {stats.statusData.map(item => {
-                                    const color = item.name === 'Bueno' ? 'bg-emerald-500' : item.name === 'Regular' ? 'bg-amber-500' : 'bg-red-500';
-
-                                    return (
-                                        <div key={item.name} className="space-y-1">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="font-semibold text-slate-700 dark:text-slate-300">{item.name}</span>
-                                                <span className="font-bold text-slate-900 dark:text-white">{item.percentage}%</span>
-                                            </div>
-                                            <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                <div className={`h-full ${color}`} style={{ width: `${item.percentage}%` }} />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            <div className="mt-20 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl flex items-center gap-3">
-                                <User className="w-6 h-6 text-indigo-600" />
-                                <p className="text-xs text-indigo-700 dark:text-indigo-400 font-medium">
-                                    Los datos reflejan exclusivamente registros con salida completada en el periodo seleccionado.
-                                </p>
+                        {/* Uso de Aseos */}
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Uso de Aseos</h2>
+                            <div className="h-90 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={stats.aseoData}
+                                            innerRadius={60}
+                                            outerRadius={80}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            cx="50%"
+                                            cy="45%"
+                                            label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
+                                        >
+                                            {stats.aseoData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                        />
+                                        <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ paddingTop: '10px' }} />
+                                    </PieChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
                     </div>
