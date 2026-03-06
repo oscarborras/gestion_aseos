@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend, LineChart, Line
+    PieChart, Pie, Cell, Legend, LineChart, Line, LabelList
 } from 'recharts'
 import { subDays, isAfter, parseISO, startOfDay, startOfWeek, startOfMonth, addDays } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
@@ -143,13 +143,21 @@ export default function StatsClient({ registros }: { registros: any[] }) {
         const unidadData = Object.entries(usagePerUnidad)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
-            .slice(0, 8);
+            .slice(0, 18);
 
+        const totalAseosUsos = Object.values(usagePerAseo).reduce((a, b) => a + b, 0);
         const aseoData = Object.entries(usagePerAseo)
-            .map(([name, value]) => ({ name, value }));
+            .map(([name, value]) => ({
+                name: `${name.replace(/Planta/g, 'P.')} (${totalAseosUsos > 0 ? Math.round((value / totalAseosUsos) * 100) : 0}%)`,
+                value
+            }));
 
+        const totalSexoUsos = Object.values(usagePerSexo).reduce((a, b) => a + b, 0);
         const sexoData = Object.entries(usagePerSexo)
-            .map(([name, value]) => ({ name, value }));
+            .map(([name, value]) => ({
+                name: `${name} (${totalSexoUsos > 0 ? Math.round((value / totalSexoUsos) * 100) : 0}%)`,
+                value
+            }));
 
         const avgDurationMin = validDurationCount > 0
             ? Math.round(totalDurationMs / validDurationCount / 60000 * 10) / 10
@@ -379,7 +387,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                                 studentStats.aseoData.map((d, i) => (
                                                     <div key={i} className="space-y-1">
                                                         <div className="flex justify-between text-[10px] font-bold">
-                                                            <span>{d.name}</span>
+                                                            <span>{d.name.replace(/Planta/g, 'P.')}</span>
                                                             <span>{d.percentage}%</span>
                                                         </div>
                                                         <div className="w-full h-1.5 bg-indigo-900/30 rounded-full overflow-hidden">
@@ -472,29 +480,36 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                             </div>
                         </div>
 
-                        {/* Gráfico de Cursos (Unidades) */}
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Distribución por Cursos</h2>
-                            <div className="h-80 w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={stats.unidadData} layout="vertical" margin={{ left: 20, right: 30 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" opacity={0.5} />
-                                        <XAxis type="number" hide />
-                                        <YAxis
-                                            dataKey="name"
-                                            type="category"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            width={100}
-                                            style={{ fontSize: '12px', fontWeight: 600, fill: '#64748B' }}
-                                        />
-                                        <Tooltip
-                                            cursor={{ fill: 'transparent' }}
-                                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                        />
-                                        <Bar dataKey="value" fill="var(--color-primary-brand)" radius={[0, 8, 8, 0]} barSize={20} />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Distribución por Cursos con mayor frecuencia</h2>
+                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                                <div style={{ height: `${Math.max(stats.unidadData.length * 42, 100)}px`, minHeight: '100px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart
+                                            data={stats.unidadData}
+                                            layout="vertical"
+                                            margin={{ left: 20, right: 40, top: 0, bottom: 0 }}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" opacity={0.5} />
+                                            <XAxis type="number" hide />
+                                            <YAxis
+                                                dataKey="name"
+                                                type="category"
+                                                axisLine={false}
+                                                tickLine={false}
+                                                width={100}
+                                                style={{ fontSize: '12px', fontWeight: 600, fill: '#64748B' }}
+                                            />
+                                            <Tooltip
+                                                cursor={{ fill: 'transparent' }}
+                                                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                            />
+                                            <Bar dataKey="value" fill="var(--color-primary-brand)" radius={[0, 8, 8, 0]} barSize={24}>
+                                                <LabelList dataKey="value" position="right" style={{ fill: '#64748B', fontWeight: 800, fontSize: '14px' }} offset={10} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -503,7 +518,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                         {/* Gráfico de Aseos */}
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Uso de Aseos</h2>
-                            <div className="h-80 w-full">
+                            <div className="h-90 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
@@ -514,6 +529,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                             dataKey="value"
                                             cx="50%"
                                             cy="45%"
+                                            label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
                                         >
                                             {stats.aseoData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -531,7 +547,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                         {/* Gráfico de Género */}
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Distribución por Género</h2>
-                            <div className="h-70 w-full">
+                            <div className="h-75 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
@@ -542,6 +558,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                             dataKey="value"
                                             cx="50%"
                                             cy="45%"
+                                            label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
                                         >
                                             {stats.sexoData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={index === 0 ? 'var(--color-primary-brand)' : '#ec4899'} />
