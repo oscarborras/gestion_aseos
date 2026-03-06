@@ -51,6 +51,12 @@ export default async function HistorialPage(props: {
     } else if (fechaFilter === 'this-month') {
         const monthStart = startOfMonth(zonedNow)
         dateGte = formatInTimeZone(monthStart, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+    } else if (fechaFilter.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [y, m, d] = fechaFilter.split('-').map(Number)
+        // Construimos el inicio del día del calendario seleccionado
+        const targetDate = startOfDay(new Date(y, m - 1, d))
+        dateGte = formatInTimeZone(targetDate, MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
+        dateLt = formatInTimeZone(addDays(targetDate, 1), MADRID_TZ, "yyyy-MM-dd'T'00:00:00.000XXX")
     }
 
     // Usar !inner si queremos que el filtro por curso afecte a los resultados de registros
@@ -210,7 +216,8 @@ export default async function HistorialPage(props: {
                             {fechaFilter === 'today' ? 'Hoy' :
                                 fechaFilter === 'yesterday' ? 'Ayer' :
                                     fechaFilter === 'this-week' ? 'Esta semana' :
-                                        fechaFilter === 'this-month' ? 'Este mes' : 'Todo'}
+                                        fechaFilter === 'this-month' ? 'Este mes' :
+                                            fechaFilter.match(/^\d{4}-\d{2}-\d{2}$/) ? format(new Date(fechaFilter.split('-').map(Number)[0], fechaFilter.split('-').map(Number)[1] - 1, fechaFilter.split('-').map(Number)[2]), 'dd/MM/yyyy') : 'Todo'}
                         </span>
                         {cursoFilter && (
                             <>

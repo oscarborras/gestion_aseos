@@ -26,7 +26,8 @@ export default function StatsClient({ registros }: { registros: any[] }) {
     const [selectedAlumnoId, setSelectedAlumnoId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [timeRange, setTimeRange] = useState<'week' | 'month' | 'total'>('total');
-    const [globalTimeRange, setGlobalTimeRange] = useState<'today' | 'yesterday' | 'week' | 'month' | 'total'>('total');
+    const [globalTimeRange, setGlobalTimeRange] = useState<'today' | 'yesterday' | 'week' | 'month' | 'total' | 'custom'>('total');
+    const [customDate, setCustomDate] = useState<string>('');
 
     const filteredRegistrosGlobal = useMemo(() => {
         if (globalTimeRange === 'total') return registros;
@@ -34,20 +35,26 @@ export default function StatsClient({ registros }: { registros: any[] }) {
         const now = new Date();
         const zonedNow = toZonedTime(now, MADRID_TZ);
         let startLimit: Date;
+        let endLimit: Date | null = null;
 
         if (globalTimeRange === 'today') {
             startLimit = startOfDay(zonedNow);
         } else if (globalTimeRange === 'yesterday') {
             startLimit = startOfDay(addDays(zonedNow, -1));
+            endLimit = startOfDay(zonedNow);
         } else if (globalTimeRange === 'week') {
             startLimit = startOfWeek(zonedNow, { weekStartsOn: 1 });
         } else if (globalTimeRange === 'month') {
             startLimit = startOfMonth(zonedNow);
+        } else if (globalTimeRange === 'custom' && customDate) {
+            const [y, m, d_part] = customDate.split('-').map(Number);
+            // Usamos el constructor local para obtener el inicio del día del calendario
+            const localDate = new Date(y, m - 1, d_part);
+            startLimit = startOfDay(localDate);
+            endLimit = addDays(startLimit, 1);
         } else {
             return registros;
         }
-
-        const endLimit = globalTimeRange === 'yesterday' ? startOfDay(zonedNow) : null;
 
         return registros.filter(r => {
             const d = new Date(r.fecha_entrada);
@@ -56,7 +63,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
             }
             return d >= startLimit;
         });
-    }, [registros, globalTimeRange]);
+    }, [registros, globalTimeRange, customDate]);
 
     const uniqueAlumnos = useMemo(() => {
         const alumnosMap: Record<string, { id: string, name: string, unidad: string }> = {};
@@ -289,11 +296,14 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                     )}
                 </div>
 
-                <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto max-w-full">
+                <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto max-w-full">
                     {(['today', 'yesterday', 'week', 'month', 'total'] as const).map((r) => (
                         <button
                             key={r}
-                            onClick={() => setGlobalTimeRange(r)}
+                            onClick={() => {
+                                setGlobalTimeRange(r);
+                                setCustomDate('');
+                            }}
                             className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${globalTimeRange === r
                                 ? 'bg-primary-brand text-white shadow-md'
                                 : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -302,6 +312,21 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                             {r === 'today' ? 'Hoy' : r === 'yesterday' ? 'Ayer' : r === 'week' ? 'Semana' : r === 'month' ? 'Mes' : 'Total'}
                         </button>
                     ))}
+
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all ${globalTimeRange === 'custom'
+                        ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/40 dark:border-indigo-800'
+                        : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+                        <CalendarDays className={`w-4 h-4 ${globalTimeRange === 'custom' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
+                        <input
+                            type="date"
+                            value={customDate}
+                            onChange={(e) => {
+                                setCustomDate(e.target.value);
+                                setGlobalTimeRange('custom');
+                            }}
+                            className={`text-[10px] font-bold uppercase bg-transparent outline-none cursor-pointer ${globalTimeRange === 'custom' ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-500'}`}
+                        />
+                    </div>
                 </div>
             </div>
 

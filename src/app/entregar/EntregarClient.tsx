@@ -188,7 +188,8 @@ export default function EntregarClient({
     const initialAssignment = () => {
         for (const student of waitingList) {
             const isChica = student.sexo?.toUpperCase() === 'M'
-            const matchingAseo = availableAseos.find(a =>
+            // Invertimos la prioridad (ahora preferirá Planta Alta para chicas y Planta Baja para chicos)
+            const matchingAseo = [...availableAseos].reverse().find(a =>
                 isChica
                     ? a.nombre.toLowerCase().includes('chica')
                     : a.nombre.toLowerCase().includes('chico')
@@ -345,13 +346,13 @@ export default function EntregarClient({
                                         : 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
                                 }`}
                         >
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${nameColorClass}`}>
+                            <span className={`text-[12px] font-black uppercase tracking-widest ${nameColorClass}`}>
                                 {abbreviated}
                             </span>
                             <div className="flex items-center gap-2">
                                 <div className={`w-2 h-2 rounded-full animate-pulse ${isLibre ? 'bg-emerald-500' : isOcupado ? 'bg-amber-500' : 'bg-red-500'}`} />
                                 <span className={`text-xs font-bold ${isLibre ? 'text-emerald-600' : isOcupado ? 'text-amber-600' : 'text-red-600'}`}>
-                                    {isLibre ? 'LIBRE' : isOcupado ? 'OCUPADO' : 'MANT.'}
+                                    {isLibre ? 'LIBRE' : isOcupado ? 'OCUPADO' : 'FUERA DE SERVICIO'}
                                 </span>
                             </div>
                         </div>

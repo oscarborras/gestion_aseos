@@ -41,19 +41,37 @@ export default function HistorialFilters() {
                 />
             </div>
 
-            <div className="relative min-w-[160px]">
-                <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                <select
-                    value={fecha}
-                    onChange={(e) => handleFilterChange('fecha', e.target.value)}
-                    className="w-full bg-white dark:bg-slate-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none cursor-pointer"
-                >
-                    <option value="today">Hoy</option>
-                    <option value="yesterday">Ayer</option>
-                    <option value="this-week">Esta semana</option>
-                    <option value="this-month">Este mes</option>
-                    <option value="all">Todo el historial</option>
-                </select>
+            <div className="flex items-center gap-2">
+                <div className="relative min-w-[160px]">
+                    <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <select
+                        value={/^\d{4}-\d{2}-\d{2}$/.test(fecha) ? 'custom' : fecha}
+                        onChange={(e) => {
+                            if (e.target.value !== 'custom') {
+                                handleFilterChange('fecha', e.target.value)
+                            }
+                        }}
+                        className="w-full bg-white dark:bg-slate-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none cursor-pointer"
+                    >
+                        <option value="today">Hoy</option>
+                        <option value="yesterday">Ayer</option>
+                        <option value="this-week">Esta semana</option>
+                        <option value="this-month">Este mes</option>
+                        <option value="all">Todo el historial</option>
+                        <option value="custom" disabled className="hidden">Fecha personalizada</option>
+                    </select>
+                </div>
+
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all ${/^\d{4}-\d{2}-\d{2}$/.test(fecha)
+                    ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/40 dark:border-indigo-800'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm'}`}>
+                    <input
+                        type="date"
+                        value={/^\d{4}-\d{2}-\d{2}$/.test(fecha) ? fecha : ''}
+                        onChange={(e) => handleFilterChange('fecha', e.target.value)}
+                        className={`text-xs font-bold uppercase bg-transparent outline-none cursor-pointer ${/^\d{4}-\d{2}-\d{2}$/.test(fecha) ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-500'}`}
+                    />
+                </div>
             </div>
 
             <div className="relative min-w-[160px]">
