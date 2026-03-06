@@ -24,6 +24,7 @@ export default async function HistorialPage(props: {
     const estadoFilter = (searchParams.estado as string) || ''
     const alumnoFilter = (searchParams.alumno as string) || ''
     const observacionesFilter = (searchParams.observaciones as string) || ''
+    const duracionFilter = (searchParams.duracion as string) || ''
     const page = Math.max(1, parseInt((searchParams.page as string) || '1', 10))
     const pageSize = [10, 25, 50].includes(parseInt((searchParams.pageSize as string) || '10', 10))
         ? parseInt((searchParams.pageSize as string) || '10', 10)
@@ -93,6 +94,12 @@ export default async function HistorialPage(props: {
         countQuery = countQuery.or('observaciones_salida.is.null,observaciones_salida.eq.""')
     }
 
+    if (duracionFilter === '5') {
+        countQuery = countQuery.gt('duracion_segundos', 300)
+    } else if (duracionFilter === '10') {
+        countQuery = countQuery.gt('duracion_segundos', 600)
+    }
+
     const { count: totalCount } = await countQuery
     const totalRegistros = totalCount || 0
     const totalPages = Math.max(1, Math.ceil(totalRegistros / pageSize))
@@ -132,6 +139,12 @@ export default async function HistorialPage(props: {
         query = query.neq('observaciones_salida', '').not('observaciones_salida', 'is', null)
     } else if (observacionesFilter === 'sin-notas') {
         query = query.or('observaciones_salida.is.null,observaciones_salida.eq.""')
+    }
+
+    if (duracionFilter === '5') {
+        query = query.gt('duracion_segundos', 300)
+    } else if (duracionFilter === '10') {
+        query = query.gt('duracion_segundos', 600)
     }
 
     const { data: registros, error } = await query
@@ -188,7 +201,7 @@ export default async function HistorialPage(props: {
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                        Historial de Registros
+                        Historial
                     </h1>
                     <div className="text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-2 text-sm">
                         <CalendarDays className="w-4 h-4" />
@@ -226,6 +239,14 @@ export default async function HistorialPage(props: {
                                 <span>y</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-primary-brand font-bold">
                                     {observacionesFilter === 'con-notas' ? 'Con observaciones' : 'Sin observaciones'}
+                                </span>
+                            </>
+                        )}
+                        {duracionFilter && (
+                            <>
+                                <span>y</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-primary-brand font-bold">
+                                    {duracionFilter === '5' ? '> 5 min' : '> 10 min'}
                                 </span>
                             </>
                         )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CalendarDays, Users, Download, HelpCircle, ListFilter, Search, Smile, MessageSquare } from 'lucide-react'
+import { CalendarDays, Users, Download, HelpCircle, ListFilter, Search, Smile, MessageSquare, Clock } from 'lucide-react'
 
 export default function HistorialFilters() {
     const router = useRouter()
@@ -13,6 +13,7 @@ export default function HistorialFilters() {
     const estado = searchParams.get('estado') || ''
     const alumno = searchParams.get('alumno') || ''
     const observaciones = searchParams.get('observaciones') || ''
+    const duracion = searchParams.get('duracion') || ''
     const pageSize = searchParams.get('pageSize') || '10'
 
     const handleFilterChange = (key: string, value: string) => {
@@ -113,6 +114,19 @@ export default function HistorialFilters() {
                     <option value="">Todas las notas</option>
                     <option value="con-notas">Con observaciones</option>
                     <option value="sin-notas">Sin observaciones</option>
+                </select>
+            </div>
+
+            <div className="relative min-w-[160px]">
+                <Clock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <select
+                    value={duracion}
+                    onChange={(e) => handleFilterChange('duracion', e.target.value)}
+                    className="w-full bg-white dark:bg-slate-800 pl-9 pr-10 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none cursor-pointer"
+                >
+                    <option value="">Cualquier duración</option>
+                    <option value="5">Más de 5 min</option>
+                    <option value="10">Más de 10 min</option>
                 </select>
             </div>
 
