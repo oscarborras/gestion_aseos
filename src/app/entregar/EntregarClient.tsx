@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { entregarTurno, entregarTurnoGrupo, anularTurno } from '../actions'
-import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser, History } from 'lucide-react'
+import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser, History, ArrowRight } from 'lucide-react'
+import { delay, motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
@@ -34,9 +35,24 @@ export default function EntregarClient({
     const router = useRouter()
     const [assignedWaitIds, setAssignedWaitIds] = useState<number[]>([])
     const [loading, setLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
+    const [deliveredIds, setDeliveredIds] = useState<number[]>([])
     const [cancelingId, setCancelingId] = useState<number | null>(null)
     const [pendingCancel, setPendingCancel] = useState<WaitingItem | null>(null)
     const [lastTakers, setLastTakers] = useState<Record<number, string[]>>({})
+
+    // Estados para "congelar" la vista durante la transición
+    const [frozenStudents, setFrozenStudents] = useState<WaitingItem[]>([])
+    const [frozenNext, setFrozenNext] = useState<WaitingItem | undefined>(undefined)
+
+    // Refs para evitar problemas de clausura en Realtime sin re-subscribirse
+    const loadingRef = useRef(loading)
+    const isSuccessRef = useRef(isSuccess)
+
+    useEffect(() => {
+        loadingRef.current = loading
+        isSuccessRef.current = isSuccess
+    }, [loading, isSuccess])
 
     const availableAseos = aseos.filter(a => a.estado_id === 1)
 
@@ -99,7 +115,10 @@ export default function EntregarClient({
                     table: 'lista_espera'
                 },
                 () => {
-                    router.refresh()
+                    // Usar refs para obtener el valor más reciente sin re-subscribirse
+                    if (!loadingRef.current && !isSuccessRef.current) {
+                        router.refresh()
+                    }
                 }
             )
             .subscribe()
@@ -115,7 +134,9 @@ export default function EntregarClient({
                     table: 'aseos'
                 },
                 () => {
-                    router.refresh()
+                    if (!loadingRef.current && !isSuccessRef.current) {
+                        router.refresh()
+                    }
                 }
             )
             .subscribe()
@@ -141,7 +162,7 @@ export default function EntregarClient({
             supabase.removeChannel(aseosChannel)
             supabase.removeChannel(registrosChannel)
         }
-    }, [router])
+    }, [router]) // Solo depende de router ahora
 
     const handleCancelTurno = (item: WaitingItem) => {
         // Muestra el modal en lugar del confirm() nativo
@@ -179,10 +200,18 @@ export default function EntregarClient({
 
     const firstMatch = initialAssignment()
 
-    // Lista de alumnos actualmente en el "Bloque 1"
+    // Lista de alumnos actualmente en el "Bloque 1" que aún no han sido marcados como entregados visualmente
     const currentStudents = firstMatch
         ? [firstMatch.student, ...waitingList.filter(s => assignedWaitIds.includes(s.id))]
+            .filter(s => !deliveredIds.includes(s.id))
         : []
+
+    // Encontrar al siguiente alumno que NO está en el reparto actual para mostrar como "próximo"
+    const nextInQueue = waitingList.find(s =>
+        !currentStudents.some(cs => cs.id === s.id) &&
+        !deliveredIds.includes(s.id) &&
+        (firstMatch ? s.id !== firstMatch.student.id : true)
+    )
 
     const assignedAseo = firstMatch?.aseo
 
@@ -244,24 +273,43 @@ export default function EntregarClient({
     const handleDeliver = async () => {
         if (!assignedAseo || currentStudents.length === 0) return
 
+        // Congelar los alumnos actuales y el siguiente antes de empezar para que no desaparezcan
+        setFrozenStudents([...currentStudents])
+        setFrozenNext(nextInQueue)
         setLoading(true)
 
+        const studentsToDeliver = [...currentStudents]
+
         // Procesar todos los alumnos seleccionados en bloque
-        const alumnosData = currentStudents.map(s => ({
+        const alumnosData = studentsToDeliver.map(s => ({
             waitingId: s.id,
             alumnoId: s.alumno_id
         }))
 
         const result = await entregarTurnoGrupo(alumnosData, assignedAseo.id)
 
-        setLoading(false)
-
         if (result.error) {
+            setLoading(false)
             toast.error(result.error)
+            setFrozenStudents([])
+            setFrozenNext(undefined)
         } else {
-            toast.success(`${currentStudents.length > 1 ? 'Llaves entregadas' : 'Llave entregada'} con éxito`)
-            setAssignedWaitIds([])
-            router.refresh()
+            // Iniciar animación de salida
+            setIsSuccess(true)
+            setDeliveredIds(prev => [...prev, ...studentsToDeliver.map(s => s.id)])
+
+            toast.success(`${studentsToDeliver.length > 1 ? 'Llaves entregadas' : 'Llave entregada'} con éxito`)
+
+            // Esperar 2 segundos para que la información del siguiente alumno sea plenamente legible
+            setTimeout(() => {
+                setDeliveredIds([])
+                setAssignedWaitIds([])
+                setIsSuccess(false)
+                setLoading(false)
+                setFrozenStudents([])
+                setFrozenNext(undefined)
+                router.refresh()
+            }, 2000)
         }
     }
 
@@ -407,17 +455,61 @@ export default function EntregarClient({
                                                 </span>
                                             </div>
                                             <div className="space-y-4">
-                                                {currentStudents.map((s) => (
-                                                    <div key={s.id} className="flex items-center gap-4 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                                                        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-700 shrink-0">
-                                                            <User className="w-5 h-5 text-slate-400" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-bold text-slate-900 dark:text-white text-base leading-tight">{s.nombre}</p>
-                                                            <p className="text-xs text-slate-500 font-bold">{s.unidad}</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                <AnimatePresence mode="popLayout">
+                                                    {(isSuccess || loading ? frozenStudents : currentStudents).map((s) => (
+                                                        <motion.div
+                                                            key={s.id}
+                                                            layout
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            exit={{ opacity: 0, x: 20, filter: 'blur(8px)' }}
+                                                            transition={{ duration: 0.3 }}
+                                                            className="flex items-center gap-4 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                                                        >
+                                                            <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-700 shrink-0">
+                                                                <User className="w-5 h-5 text-slate-400" />
+                                                            </div>
+                                                            <div className="flex-grow">
+                                                                <p className="font-bold text-slate-900 dark:text-white text-base leading-tight">{s.nombre}</p>
+                                                                <p className="text-xs text-slate-500 font-bold">{s.unidad}</p>
+                                                            </div>
+                                                            {isSuccess && (
+                                                                <motion.div
+                                                                    initial={{ scale: 0 }}
+                                                                    animate={{ scale: 1 }}
+                                                                    className="text-emerald-500"
+                                                                >
+                                                                    <CheckCircle className="w-5 h-5" />
+                                                                </motion.div>
+                                                            )}
+                                                        </motion.div>
+                                                    ))}
+                                                </AnimatePresence>
+
+                                                {/* Información temporal sobre el siguiente alumno */}
+                                                <AnimatePresence>
+                                                    {(isSuccess || loading) && (frozenNext || nextInQueue) && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                                                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                            className="p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl flex items-center justify-between overflow-hidden"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center">
+                                                                    <ArrowRight className="w-4 h-4 text-indigo-600" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Siguiente en espera</p>
+                                                                    <p className="text-sm font-bold text-slate-700 dark:text-indigo-200">{(frozenNext || nextInQueue)?.nombre}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-[10px] bg-indigo-200/50 dark:bg-indigo-800/50 px-2 py-1 rounded-md font-bold text-indigo-700 dark:text-indigo-300">
+                                                                {(frozenNext || nextInQueue)?.unidad}
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                             </div>
                                         </div>
                                     </div>
