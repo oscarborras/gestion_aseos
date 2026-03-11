@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import EntregarClient from '@/app/entregar/EntregarClient'
+import CurrentTime from '@/components/dashboard/CurrentTime'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -44,13 +45,16 @@ export default async function EntregarPage() {
 
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-8 md:py-0 space-y-8">
-            <header>
-                <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Gestión de Entrega de Llaves
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                    Asigna un aseo disponible al siguiente alumno en espera.
-                </p>
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                        Gestión de Entrega de Llaves
+                    </h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                        Asigna un aseo disponible al siguiente alumno en espera.
+                    </p>
+                </div>
+                <CurrentTime />
             </header>
 
             <EntregarClient

@@ -26,7 +26,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
     const [selectedAlumnoId, setSelectedAlumnoId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [timeRange, setTimeRange] = useState<'week' | 'month' | 'total'>('total');
-    const [globalTimeRange, setGlobalTimeRange] = useState<'today' | 'yesterday' | 'week' | 'month' | 'total' | 'custom'>('total');
+    const [globalTimeRange, setGlobalTimeRange] = useState<'today' | 'yesterday' | 'week' | 'month' | 'total' | 'custom'>('today');
     const [customDate, setCustomDate] = useState<string>('');
     const [franjaGenderFilter, setFranjaGenderFilter] = useState<'total' | 'M' | 'F'>('total');
 
@@ -44,9 +44,9 @@ export default function StatsClient({ registros }: { registros: any[] }) {
             startLimit = startOfDay(addDays(zonedNow, -1));
             endLimit = startOfDay(zonedNow);
         } else if (globalTimeRange === 'week') {
-            startLimit = startOfWeek(zonedNow, { weekStartsOn: 1 });
+            startLimit = startOfDay(subDays(zonedNow, 7));
         } else if (globalTimeRange === 'month') {
-            startLimit = startOfMonth(zonedNow);
+            startLimit = startOfDay(subDays(zonedNow, 30));
         } else if (globalTimeRange === 'custom' && customDate) {
             const [y, m, d_part] = customDate.split('-').map(Number);
             // Usamos el constructor local para obtener el inicio del día del calendario
@@ -218,10 +218,54 @@ export default function StatsClient({ registros }: { registros: any[] }) {
             });
         });
 
+        // Calculamos promedios globales con base en registros históricos
+        const globalFranjaUsage = {
+            total: { '1ª hora': 0, '2ª hora': 0, '3ª hora': 0, '4ª hora': 0, '5ª hora': 0, '6ª hora': 0 },
+            M: { '1ª hora': 0, '2ª hora': 0, '3ª hora': 0, '4ª hora': 0, '5ª hora': 0, '6ª hora': 0 },
+            F: { '1ª hora': 0, '2ª hora': 0, '3ª hora': 0, '4ª hora': 0, '5ª hora': 0, '6ª hora': 0 }
+        };
+        const uniqueDaysGlobal = new Set<string>();
+
+        registros.forEach(reg => {
+            const date = toZonedTime(new Date(reg.fecha_entrada), MADRID_TZ);
+            uniqueDaysGlobal.add(date.toDateString());
+            
+            const h = date.getHours();
+            const m = date.getMinutes();
+            const timeVal = h * 60 + m;
+            const sexo = reg.alumnos?.sexo?.toUpperCase() === 'M' ? 'F' : 'M'; // Corregir mapeo invertido del sistema
+
+            franjas.forEach(f => {
+                const startVal = f.start.h * 60 + f.start.m;
+                const endVal = f.end.h * 60 + f.end.m;
+                if (timeVal >= startVal && timeVal <= endVal) {
+                    globalFranjaUsage.total[f.id as keyof typeof globalFranjaUsage.total]++;
+                    if (sexo === 'M') globalFranjaUsage.M[f.id as keyof typeof globalFranjaUsage.M]++;
+                    if (sexo === 'F') globalFranjaUsage.F[f.id as keyof typeof globalFranjaUsage.F]++;
+                }
+            });
+        });
+
+        const totalGlobalDays = uniqueDaysGlobal.size > 0 ? uniqueDaysGlobal.size : 1;
+        
+        let daysInFilter = 1;
+        if (globalTimeRange === 'week') daysInFilter = 7;
+        else if (globalTimeRange === 'month') daysInFilter = 30;
+        else if (globalTimeRange === 'total') daysInFilter = totalGlobalDays;
+
         const franjaData = {
-            total: Object.entries(franjaUsage.total).map(([name, value]) => ({ name, value })),
-            M: Object.entries(franjaUsage.M).map(([name, value]) => ({ name, value })),
-            F: Object.entries(franjaUsage.F).map(([name, value]) => ({ name, value }))
+            total: Object.entries(franjaUsage.total).map(([name, value]) => {
+                const avgDaily = globalFranjaUsage.total[name as keyof typeof globalFranjaUsage.total] / totalGlobalDays;
+                return { name, value, average: Number((avgDaily * daysInFilter).toFixed(1)) };
+            }),
+            M: Object.entries(franjaUsage.M).map(([name, value]) => {
+                const avgDaily = globalFranjaUsage.M[name as keyof typeof globalFranjaUsage.M] / totalGlobalDays;
+                return { name, value, average: Number((avgDaily * daysInFilter).toFixed(1)) };
+            }),
+            F: Object.entries(franjaUsage.F).map(([name, value]) => {
+                const avgDaily = globalFranjaUsage.F[name as keyof typeof globalFranjaUsage.F] / totalGlobalDays;
+                return { name, value, average: Number((avgDaily * daysInFilter).toFixed(1)) };
+            })
         };
 
         return {
@@ -234,7 +278,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
             totalUsos: filteredRegistrosGlobal.length,
             avgDurationMin
         };
-    }, [filteredRegistrosGlobal]);
+    }, [filteredRegistrosGlobal, registros, globalTimeRange]);
 
     const studentStats = useMemo(() => {
         if (!selectedAlumnoId) return null;
@@ -350,7 +394,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                 : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                         >
-                            {r === 'today' ? 'Hoy' : r === 'yesterday' ? 'Ayer' : r === 'week' ? 'Semana' : r === 'month' ? 'Mes' : 'Total'}
+                            {r === 'today' ? 'Hoy' : r === 'yesterday' ? 'Ayer' : r === 'week' ? '7 Días' : r === 'month' ? '30 Días' : 'Total'}
                         </button>
                     ))}
 
@@ -651,6 +695,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                             content={({ active, payload }) => {
                                                 if (active && payload && payload.length) {
                                                     const val = payload[0].value as number;
+                                                    const avg = payload[1]?.value as number;
                                                     const currentData = stats.franjaData[franjaGenderFilter];
                                                     const totalForFilter = currentData.reduce((a, b) => a + b.value, 0);
                                                     const pct = totalForFilter > 0 ? ((val / totalForFilter) * 100).toFixed(1) : 0;
@@ -659,19 +704,32 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                                             <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{payload[0].payload.name}</p>
                                                             <div className="flex items-baseline gap-2">
                                                                 <span className="text-lg font-black text-slate-900 dark:text-white">{val}</span>
-                                                                <span className="text-xs font-bold text-indigo-500">{pct}%</span>
+                                                                <span className="text-xs font-bold text-indigo-500">{pct}% actual</span>
                                                             </div>
-                                                            <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold">Registros totales</p>
+                                                            {avg !== undefined && (
+                                                                <div className="mt-1 flex items-baseline gap-2">
+                                                                    <span className="text-sm font-bold text-slate-400">Media: {avg}</span>
+                                                                </div>
+                                                            )}
+                                                            <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold">Registros</p>
                                                         </div>
                                                     );
                                                 }
                                                 return null;
                                             }}
                                         />
+                                        <Legend 
+                                            verticalAlign="top" 
+                                            align="right" 
+                                            iconType="circle"
+                                            wrapperStyle={{ paddingBottom: '10px', fontSize: '12px', fontWeight: 'bold' }}
+                                        />
                                         <Bar
                                             dataKey="value"
+                                            name="Actual"
                                             radius={[6, 6, 0, 0]}
-                                            barSize={40}
+                                            maxBarSize={40}
+                                            fill={franjaGenderFilter === 'F' ? '#ec4899' : franjaGenderFilter === 'M' ? '#4f46e5' : 'var(--color-primary-brand)'}
                                         >
                                             {stats.franjaData[franjaGenderFilter].map((entry, index) => (
                                                 <Cell
@@ -680,6 +738,16 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                                 />
                                             ))}
                                             <LabelList dataKey="value" position="top" style={{ fill: '#64748B', fontWeight: 800, fontSize: '12px' }} offset={10} />
+                                        </Bar>
+                                        <Bar
+                                            dataKey="average"
+                                            name="Media Histórica"
+                                            radius={[6, 6, 0, 0]}
+                                            maxBarSize={40}
+                                            fill="#94a3b8"
+                                            opacity={0.6}
+                                        >
+                                            <LabelList dataKey="average" position="top" style={{ fill: '#94a3b8', fontWeight: 800, fontSize: '11px' }} offset={10} />
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
