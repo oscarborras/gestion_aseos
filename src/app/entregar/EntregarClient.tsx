@@ -204,7 +204,7 @@ export default function EntregarClient({
 
     const handleAseoChange = async (aseo: Aseo) => {
         if (!changingStudent) return;
-        
+
         if (aseo.estado_id === 1) { // Libre
             setLoading(true);
             const result = await entregarTurno(changingStudent.id, changingStudent.alumno_id, aseo.id);
@@ -413,14 +413,14 @@ export default function EntregarClient({
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-3">
                             {aseos.map(aseo => {
                                 const isLibre = aseo.estado_id === 1;
                                 const abbreviated = getAbbreviatedName(aseo.nombre);
                                 const isChica = aseo.nombre.toLowerCase().includes('chica');
                                 const nameColorClass = isChica ? "text-pink-600 dark:text-pink-400" : "text-blue-600 dark:text-blue-400";
-                                
+
                                 return (
                                     <button
                                         key={aseo.id}
@@ -433,7 +433,7 @@ export default function EntregarClient({
                                         <div className="flex items-center gap-2">
                                             <div className={`w-2 h-2 rounded-full ${isLibre ? 'bg-emerald-500' : 'bg-red-500'}`} />
                                             <span className={`text-xs font-bold ${isLibre ? 'text-emerald-600' : 'text-slate-500'}`}>
-                                                {isLibre ? 'Libre' : 'Ocupado / Mantenimiento'}
+                                                {isLibre ? 'Libre' : 'Ocupado'}
                                             </span>
                                         </div>
                                     </button>
@@ -555,7 +555,7 @@ export default function EntregarClient({
                                                                 <User className="w-5 h-5 text-slate-400" />
                                                             </div>
                                                             <div className="flex-grow">
-                                                                <button 
+                                                                <button
                                                                     onClick={() => setChangingStudent(s)}
                                                                     className="text-left group/change flex items-center gap-2 focus:outline-none"
                                                                     title="Cambiar aseo asignado"
