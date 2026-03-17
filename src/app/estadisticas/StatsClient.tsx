@@ -229,7 +229,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
         registros.forEach(reg => {
             const date = toZonedTime(new Date(reg.fecha_entrada), MADRID_TZ);
             uniqueDaysGlobal.add(date.toDateString());
-            
+
             const h = date.getHours();
             const m = date.getMinutes();
             const timeVal = h * 60 + m;
@@ -247,7 +247,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
         });
 
         const totalGlobalDays = uniqueDaysGlobal.size > 0 ? uniqueDaysGlobal.size : 1;
-        
+
         let daysInFilter = 1;
         if (globalTimeRange === 'week') daysInFilter = 7;
         else if (globalTimeRange === 'month') daysInFilter = 30;
@@ -451,28 +451,6 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                                 {studentStats.alumno.unidad}
                                             </p>
                                         </div>
-                                    </div>
-
-                                    <div className="flex bg-white/10 p-1 rounded-xl backdrop-blur-md">
-                                        {(['week', 'month', 'total'] as const).map((range) => (
-                                            <button
-                                                key={range}
-                                                onClick={() => setTimeRange(range)}
-                                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${timeRange === range
-                                                    ? 'bg-white text-indigo-600 shadow-sm'
-                                                    : 'text-white hover:bg-white/10'
-                                                    }`}
-                                            >
-                                                {range === 'week' ? '7 días' : range === 'month' ? '30 días' : 'Total'}
-                                            </button>
-                                        ))}
-                                        <button
-                                            onClick={() => setSelectedAlumnoId(null)}
-                                            className="ml-2 p-2 hover:bg-white/20 rounded-lg transition-colors"
-                                            title="Cerrar vista"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
                                     </div>
                                 </div>
 
@@ -718,9 +696,9 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                                 return null;
                                             }}
                                         />
-                                        <Legend 
-                                            verticalAlign="top" 
-                                            align="right" 
+                                        <Legend
+                                            verticalAlign="top"
+                                            align="right"
                                             iconType="circle"
                                             wrapperStyle={{ paddingBottom: '10px', fontSize: '12px', fontWeight: 'bold' }}
                                         />
