@@ -706,7 +706,7 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                                                 <span className="text-lg font-black text-slate-900 dark:text-white">{val}</span>
                                                                 <span className="text-xs font-bold text-indigo-500">{pct}% actual</span>
                                                             </div>
-                                                            {avg !== undefined && (
+                                                            {avg !== undefined && ['today', 'yesterday', 'custom'].includes(globalTimeRange) && (
                                                                 <div className="mt-1 flex items-baseline gap-2">
                                                                     <span className="text-sm font-bold text-slate-400">Media: {avg}</span>
                                                                 </div>
@@ -739,16 +739,18 @@ export default function StatsClient({ registros }: { registros: any[] }) {
                                             ))}
                                             <LabelList dataKey="value" position="top" style={{ fill: '#64748B', fontWeight: 800, fontSize: '12px' }} offset={10} />
                                         </Bar>
-                                        <Bar
-                                            dataKey="average"
-                                            name="Media Histórica"
-                                            radius={[6, 6, 0, 0]}
-                                            maxBarSize={40}
-                                            fill="#94a3b8"
-                                            opacity={0.6}
-                                        >
-                                            <LabelList dataKey="average" position="top" style={{ fill: '#94a3b8', fontWeight: 800, fontSize: '11px' }} offset={10} />
-                                        </Bar>
+                                        {['today', 'yesterday', 'custom'].includes(globalTimeRange) && (
+                                            <Bar
+                                                dataKey="average"
+                                                name="Media Histórica"
+                                                radius={[6, 6, 0, 0]}
+                                                maxBarSize={40}
+                                                fill="#94a3b8"
+                                                opacity={0.6}
+                                            >
+                                                <LabelList dataKey="average" position="top" style={{ fill: '#94a3b8', fontWeight: 800, fontSize: '11px' }} offset={10} />
+                                            </Bar>
+                                        )}
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
