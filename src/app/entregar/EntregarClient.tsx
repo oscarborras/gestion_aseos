@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { entregarTurno, entregarTurnoGrupo, anularTurno } from '../actions'
-import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser, History, ArrowRight } from 'lucide-react'
+import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser, History, ArrowRight, RefreshCw } from 'lucide-react'
 import { delay, motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -40,6 +40,8 @@ export default function EntregarClient({
     const [cancelingId, setCancelingId] = useState<number | null>(null)
     const [pendingCancel, setPendingCancel] = useState<WaitingItem | null>(null)
     const [lastTakers, setLastTakers] = useState<Record<number, string[]>>({})
+    const [changingStudent, setChangingStudent] = useState<WaitingItem | null>(null)
+    const [skippedWaitIds, setSkippedWaitIds] = useState<number[]>([])
 
     // Estados para "congelar" la vista durante la transición
     const [frozenStudents, setFrozenStudents] = useState<WaitingItem[]>([])
@@ -187,6 +189,7 @@ export default function EntregarClient({
     // Encontrar el primer alumno elegible (punto de partida)
     const initialAssignment = () => {
         for (const student of waitingList) {
+            if (skippedWaitIds.includes(student.id)) continue;
             const isChica = student.sexo?.toUpperCase() === 'M'
             // Invertimos la prioridad (ahora preferirá Planta Alta para chicas y Planta Baja para chicos)
             const matchingAseo = [...availableAseos].reverse().find(a =>
@@ -199,11 +202,39 @@ export default function EntregarClient({
         return null
     }
 
+    const handleAseoChange = async (aseo: Aseo) => {
+        if (!changingStudent) return;
+        
+        if (aseo.estado_id === 1) { // Libre
+            setLoading(true);
+            const result = await entregarTurno(changingStudent.id, changingStudent.alumno_id, aseo.id);
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success(`Llave entregada a ${changingStudent.nombre} en ${getAbbreviatedName(aseo.nombre)}`);
+                setDeliveredIds(prev => [...prev, changingStudent.id]);
+                if (assignedWaitIds.includes(changingStudent.id)) {
+                    setAssignedWaitIds(prev => prev.filter(id => id !== changingStudent.id));
+                }
+            }
+            setLoading(false);
+        } else { // Ocupado
+            toast.success(`${changingStudent.nombre} vuelve a la lista de espera al estar ocupado este aseo.`);
+            if (firstMatch && firstMatch.student.id === changingStudent.id) {
+                setSkippedWaitIds(prev => [...prev, changingStudent.id]);
+            }
+            if (assignedWaitIds.includes(changingStudent.id)) {
+                setAssignedWaitIds(prev => prev.filter(id => id !== changingStudent.id));
+            }
+        }
+        setChangingStudent(null);
+    }
+
     const firstMatch = initialAssignment()
 
     // Lista de alumnos actualmente en el "Bloque 1" que aún no han sido marcados como entregados visualmente
     const currentStudents = firstMatch
-        ? [firstMatch.student, ...waitingList.filter(s => assignedWaitIds.includes(s.id))]
+        ? [firstMatch.student, ...waitingList.filter(s => assignedWaitIds.includes(s.id) && s.id !== firstMatch.student.id)]
             .filter(s => !deliveredIds.includes(s.id))
         : []
 
@@ -360,6 +391,59 @@ export default function EntregarClient({
                 })}
             </div>
 
+            {/* Modal para cambiar aseo a un alumno */}
+            {changingStudent && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        onClick={() => setChangingStudent(null)}
+                    />
+                    <div className="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 p-8 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white">Cambiar Aseo</h2>
+                                <p className="text-sm text-slate-500 mt-1">
+                                    Selecciona un aseo para <strong className="text-slate-800 dark:text-slate-200">{changingStudent.nombre}</strong>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setChangingStudent(null)}
+                                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                            {aseos.map(aseo => {
+                                const isLibre = aseo.estado_id === 1;
+                                const abbreviated = getAbbreviatedName(aseo.nombre);
+                                const isChica = aseo.nombre.toLowerCase().includes('chica');
+                                const nameColorClass = isChica ? "text-pink-600 dark:text-pink-400" : "text-blue-600 dark:text-blue-400";
+                                
+                                return (
+                                    <button
+                                        key={aseo.id}
+                                        onClick={() => handleAseoChange(aseo)}
+                                        className={`p-4 rounded-2xl border text-left transition-all ${isLibre ? 'bg-white dark:bg-slate-800 hover:border-emerald-500 hover:shadow-md' : 'bg-slate-50 dark:bg-slate-800/50 opacity-70 hover:opacity-100'} border-slate-200 dark:border-slate-700`}
+                                    >
+                                        <span className={`text-sm font-black uppercase tracking-widest ${nameColorClass} block mb-2`}>
+                                            {abbreviated}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${isLibre ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                            <span className={`text-xs font-bold ${isLibre ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                                {isLibre ? 'Libre' : 'Ocupado / Mantenimiento'}
+                                            </span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Modal de confirmación de anulación */}
             {pendingCancel && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -471,7 +555,16 @@ export default function EntregarClient({
                                                                 <User className="w-5 h-5 text-slate-400" />
                                                             </div>
                                                             <div className="flex-grow">
-                                                                <p className="font-bold text-slate-900 dark:text-white text-base leading-tight">{s.nombre}</p>
+                                                                <button 
+                                                                    onClick={() => setChangingStudent(s)}
+                                                                    className="text-left group/change flex items-center gap-2 focus:outline-none"
+                                                                    title="Cambiar aseo asignado"
+                                                                >
+                                                                    <p className="font-bold text-slate-900 dark:text-white text-base leading-tight group-hover/change:text-amber-600 transition-colors">
+                                                                        {s.nombre}
+                                                                    </p>
+                                                                    <RefreshCw className="w-3.5 h-3.5 text-slate-300 group-hover/change:text-amber-500 transition-colors" />
+                                                                </button>
                                                                 <p className="text-xs text-slate-500 font-bold">{s.unidad}</p>
                                                             </div>
                                                             {isSuccess && (

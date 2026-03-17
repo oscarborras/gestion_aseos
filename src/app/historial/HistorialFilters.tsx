@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { CalendarDays, Users, Download, HelpCircle, ListFilter, Search, Smile, MessageSquare, Clock } from 'lucide-react'
 
 export default function HistorialFilters() {
@@ -11,7 +12,7 @@ export default function HistorialFilters() {
     const curso = searchParams.get('curso') || ''
     const aseo = searchParams.get('aseo') || ''
     const estado = searchParams.get('estado') || ''
-    const alumno = searchParams.get('alumno') || ''
+    const [localAlumno, setLocalAlumno] = useState(searchParams.get('alumno') || '')
     const observaciones = searchParams.get('observaciones') || ''
     const duracion = searchParams.get('duracion') || ''
     const pageSize = searchParams.get('pageSize') || '10'
@@ -28,14 +29,30 @@ export default function HistorialFilters() {
         router.push(`/historial?${params.toString()}`)
     }
 
+    // Update local state if URL changes externally
+    useEffect(() => {
+        setLocalAlumno(searchParams.get('alumno') || '')
+    }, [searchParams])
+
+    // Debounce the alumno filter
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const currentUrlAlumno = searchParams.get('alumno') || '';
+            if (localAlumno !== currentUrlAlumno) {
+                handleFilterChange('alumno', localAlumno)
+            }
+        }, 400)
+        return () => clearTimeout(timer)
+    }, [localAlumno])
+
     return (
         <div className="flex flex-wrap items-center gap-3">
             <div className="relative min-w-[200px]">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <input
                     type="text"
-                    value={alumno}
-                    onChange={(e) => handleFilterChange('alumno', e.target.value)}
+                    value={localAlumno}
+                    onChange={(e) => setLocalAlumno(e.target.value)}
                     placeholder="Buscar alumno..."
                     className="w-full bg-white dark:bg-slate-800 pl-9 pr-4 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-primary-brand focus:border-primary-brand transition-all shadow-sm outline-none"
                 />
