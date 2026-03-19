@@ -18,7 +18,7 @@ export default async function MantenimientoPage() {
 
     // Fetch config
     const { data: config } = await supabase
-        .from('aseos_config')
+        .from('aseos_config' as any)
         .select('*')
         .eq('id', 1)
         .single()
