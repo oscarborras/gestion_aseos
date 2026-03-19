@@ -16,6 +16,13 @@ export default async function MantenimientoPage() {
         .select('*')
         .order('id')
 
+    // Fetch config
+    const { data: config } = await supabase
+        .from('aseos_config')
+        .select('*')
+        .eq('id', 1)
+        .single()
+
     return (
         <div className="w-full max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4">
             <header className="mb-10">
@@ -25,7 +32,7 @@ export default async function MantenimientoPage() {
                 </p>
             </header>
 
-            <MantenimientoClient aseos={aseos || []} />
+            <MantenimientoClient aseos={aseos || []} initialConfig={config} />
         </div>
     )
 }

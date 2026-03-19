@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History, Clock10, Key, ShieldCheck, UserPlus, Menu, X as CloseIcon, BarChart } from 'lucide-react'
+import { LayoutDashboard, LogIn, LogOut, Settings, Users, GraduationCap, History, Clock10, Key, ShieldCheck, UserPlus, Menu, X as CloseIcon, BarChart, Activity } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const routes = [
@@ -62,6 +62,12 @@ const routes = [
         label: 'Estadísticas',
         icon: BarChart,
         href: '/estadisticas',
+        roles: ['Admin', 'Directiva']
+    },
+    {
+        label: 'Seguimiento',
+        icon: Activity,
+        href: '/seguimiento',
         roles: ['Admin', 'Directiva']
     },
     {
@@ -264,7 +270,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                             </div>
                         </Link>
                     )}
-                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.14.2</span>
+                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.15.0</span>
                 </div>
             </aside>
         </>

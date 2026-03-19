@@ -2,6 +2,9 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { resend } from '@/lib/resend'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 export async function registrarEntrada(formData: FormData) {
     const supabase = await createClient()
@@ -367,7 +370,7 @@ export async function entregarTurno(waitingId: number, alumnoId: string, aseoId:
     if (regError) return { error: 'Error al registrar entrada' }
 
     // 4. Actualizar estado del aseo (Añadiendo a lo que ya hubiera)
-    const { data: aseoActual } = await supabase.from('aseos').select('ocupado_por, curso_alumno').eq('id', aseoId).single()
+    const { data: aseoActual } = await supabase.from('aseos').select('nombre, ocupado_por, curso_alumno').eq('id', aseoId).single()
 
     let ocupado_por = alumno.alumno
     let curso_alumno = alumno.unidad || 'Sin Curso'
@@ -396,6 +399,49 @@ export async function entregarTurno(waitingId: number, alumnoId: string, aseoId:
         .eq('id', aseoId)
 
     if (aseoError) return { error: 'Error al ocupar el aseo' }
+
+    // 5. Comprobar si el alumno está en seguimiento y enviar email
+    try {
+        const { data: seguimiento } = await supabase
+            .from('aseos_seguimiento' as any)
+            .select('*')
+            .eq('alumno_id', alumnoId)
+            .single()
+
+        if (seguimiento) {
+            const config = await getAseosConfig() as any
+            if (config?.email_seguimiento) {
+                const now = new Date()
+                const formattedTime = format(now, "HH:mm 'de' d 'de' MMMM", { locale: es })
+                
+                await resend.emails.send({
+                    from: 'Aseos Julio Verne <onboarding@resend.dev>',
+                    to: config.email_seguimiento,
+                    subject: `⚠️ Aviso de Seguimiento: ${alumno.alumno}`,
+                    html: `
+                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                            <div style="background-color: #f1f5f9; padding: 24px; border-bottom: 1px solid #e2e8f0;">
+                                <h2 style="color: #1e293b; margin: 0; font-size: 20px;">Aviso de Seguimiento</h2>
+                            </div>
+                            <div style="padding: 24px; background-color: #ffffff;">
+                                <p style="color: #64748b; margin: 0 0 16px 0;">Se ha registrado una solicitud de acceso al aseo para un alumno en seguimiento:</p>
+                                <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                                    <p style="margin: 0 0 8px 0; font-size: 16px;"><strong>Alumno:</strong> ${alumno.alumno}</p>
+                                    <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Curso:</strong> ${alumno.unidad || 'Sin curso'}</p>
+                                    <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Aseo:</strong> ${aseoActual?.nombre || 'Desconocido'}</p>
+                                    <p style="margin: 0; font-size: 14px;"><strong>Hora:</strong> ${formattedTime}</p>
+                                </div>
+                                <p style="color: #94a3b8; font-size: 12px; margin-top: 24px;">Este es un mensaje automático del sistema de gestión de aseos.</p>
+                            </div>
+                        </div>
+                    `
+                });
+            }
+        }
+    } catch (err) {
+        console.error('Error al enviar email de seguimiento:', err)
+        // No bloqueamos la acción si falla el email, solo informamos en consola
+    }
 
     revalidatePath('/')
     revalidatePath('/entregar')
@@ -477,5 +523,135 @@ export async function updateUserRoles(targetUserId: string, roleIds: number[]) {
     }
 
     revalidatePath('/mantenimiento/usuarios')
+    return { success: true }
+}
+
+export async function getAlumnosSeguimiento() {
+    const supabase = await createClient()
+
+    const { data: seguimiento, error } = await supabase
+        .from('aseos_seguimiento' as any)
+        .select(`
+            alumno_id,
+            created_at,
+            alumnos (
+                id,
+                alumno,
+                unidad
+            )
+        `)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching seguimiento:', error)
+        return []
+    }
+
+    return (seguimiento || []).map((s: any) => ({
+        id: s.alumno_id,
+        name: s.alumnos?.alumno || 'Desconocido',
+        unidad: s.alumnos?.unidad || 'Sin curso',
+        created_at: s.created_at
+    }))
+}
+
+export async function addAlumnoSeguimiento(alumnoId: string) {
+    const supabase = await createClient()
+
+    // Comprobar si ya existe para evitar error de Supabase
+    const { data: existing } = await supabase
+        .from('aseos_seguimiento' as any)
+        .select('alumno_id')
+        .eq('alumno_id', alumnoId)
+        .single()
+
+    if (existing) {
+        return { error: 'Este alumno ya está en el registro de seguimiento' }
+    }
+
+    const { error } = await supabase
+        .from('aseos_seguimiento' as any)
+        .insert({ alumno_id: alumnoId })
+
+    if (error) {
+        console.error('Error adding to seguimiento:', error)
+        return { error: 'Ocurrió un error al añadir al alumno' }
+    }
+
+    revalidatePath('/seguimiento')
+    return { success: true }
+}
+
+export async function removeAlumnoSeguimiento(alumnoId: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+        .from('aseos_seguimiento' as any)
+        .delete()
+        .eq('alumno_id', alumnoId)
+
+    if (error) {
+        console.error('Error removing from seguimiento:', error)
+        return { error: 'No se pudo eliminar al alumno del registro' }
+    }
+
+    revalidatePath('/seguimiento')
+    return { success: true }
+}
+
+export async function getAllAlumnos() {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('alumnos')
+        .select('id, alumno, unidad')
+        .order('alumno', { ascending: true })
+
+    if (error) {
+        console.error('Error fetching all alumnos:', error)
+        return []
+    }
+
+    return data.map(a => ({
+        id: String(a.id),
+        name: a.alumno,
+        unidad: a.unidad
+    }))
+}
+
+export async function getAseosConfig() {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('aseos_config' as any)
+        .select('*')
+        .eq('id', 1)
+        .single()
+
+    if (error) {
+        console.error('Error fetching aseos config:', error)
+        return null
+    }
+
+    return data
+}
+
+export async function updateSeguimientoEmail(email: string) {
+    const supabase = await createClient()
+    
+    const myRoles = await getUserRoles()
+    if (!myRoles.includes('Admin') && !myRoles.includes('Directiva')) {
+        return { error: 'No tienes permiso para realizar esta acción' }
+    }
+
+    const { error } = await supabase
+        .from('aseos_config' as any)
+        .update({ email_seguimiento: email })
+        .eq('id', 1)
+
+    if (error) {
+        console.error('Error updating seguimiento email:', error)
+        return { error: 'No se pudo actualizar el email de seguimiento' }
+    }
+
+    revalidatePath('/mantenimiento')
     return { success: true }
 }

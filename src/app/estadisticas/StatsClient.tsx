@@ -82,11 +82,12 @@ export default function StatsClient({ registros }: { registros: any[] }) {
 
     const filteredAlumnos = useMemo(() => {
         if (!searchQuery.trim()) return [];
-        const query = searchQuery.toLowerCase();
-        return uniqueAlumnos.filter(a =>
-            a.name.toLowerCase().includes(query) ||
-            a.unidad.toLowerCase().includes(query)
-        ).slice(0, 5);
+        const words = searchQuery.toLowerCase().split(' ').filter(word => word.length > 0);
+        
+        return uniqueAlumnos.filter(a => {
+            const studentText = `${a.name} ${a.unidad}`.toLowerCase();
+            return words.every(word => studentText.includes(word));
+        }).slice(0, 5);
     }, [uniqueAlumnos, searchQuery]);
 
     const stats = useMemo(() => {

@@ -1,20 +1,34 @@
 'use client'
 
 import { useState } from 'react'
-import { Info, Wrench, RotateCw, ShieldCheck } from 'lucide-react'
+import { Info, Wrench, RotateCw, ShieldCheck, Mail, Save, Loader2, Settings } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { toggleMantenimiento } from '../actions'
+import { toggleMantenimiento, updateSeguimientoEmail } from '../actions'
 
 type Aseo = any
 
-export default function MantenimientoClient({ aseos }: { aseos: Aseo[] }) {
+export default function MantenimientoClient({ aseos, initialConfig }: { aseos: Aseo[], initialConfig: any }) {
     const router = useRouter()
     const [loadingId, setLoadingId] = useState<number | null>(null)
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const [isSavingEmail, setIsSavingEmail] = useState(false)
+    const [emailSeguimiento, setEmailSeguimiento] = useState(initialConfig?.email_seguimiento || '')
 
     const libres = aseos.filter((a) => a.estado_id === 1).length
     const enMantenimiento = aseos.filter((a) => a.estado_id === 3).length
+
+    const handleUpdateEmail = async () => {
+        setIsSavingEmail(true)
+        const result = await updateSeguimientoEmail(emailSeguimiento)
+        setIsSavingEmail(false)
+
+        if (result.error) {
+            toast.error(result.error)
+        } else {
+            toast.success('Email de seguimiento actualizado')
+        }
+    }
 
     const handleToggle = async (aseoId: number, currentEstadoId: number) => {
         // Si esta ocupado (2), avisamos o simplemente lo pasamos a mantenimiento (3)?
@@ -120,6 +134,65 @@ export default function MantenimientoClient({ aseos }: { aseos: Aseo[] }) {
                                 />
                             )
                         })}
+                    </div>
+                </div>
+
+                {/* Sección Configuración Global */}
+                <div className="pt-12 border-t border-slate-100 dark:border-slate-800">
+                    <div className="max-w-xl mb-8">
+                        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <Settings className="w-5 h-5 text-indigo-500" />
+                            Configuración Global
+                        </h3>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">Ajustes generales del sistema de convivencia y seguimiento.</p>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-10 shadow-sm relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+                            <Mail className="w-32 h-32 text-indigo-500" />
+                        </div>
+
+                        <div className="max-w-2xl relative z-10">
+                            <div className="flex items-center gap-5 mb-8">
+                                <div className="h-14 w-14 bg-indigo-50 dark:bg-indigo-900/30 rounded-[1.25rem] flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 shadow-sm">
+                                    <Mail className="w-7 h-7" />
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-black text-slate-900 dark:text-white leading-tight">Canal de Notificaciones</h4>
+                                    <p className="text-sm text-slate-500 font-medium">Dirección de correo para alertas de seguimiento en tiempo real.</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="flex-1 relative group/input">
+                                    <input
+                                        type="email"
+                                        placeholder="ejemplo@centro.es"
+                                        value={emailSeguimiento}
+                                        onChange={(e) => setEmailSeguimiento(e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-6 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-4 focus:ring-primary-brand/10 transition-all outline-none font-bold"
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-brand transform scale-x-0 group-focus-within/input:scale-x-100 transition-transform duration-300 rounded-full mx-6" />
+                                </div>
+                                <button
+                                    onClick={handleUpdateEmail}
+                                    disabled={isSavingEmail}
+                                    className="flex items-center justify-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-2xl font-black shadow-xl shadow-blue-600/20 transition-all transform active:scale-[0.98] border border-blue-500/30"
+                                >
+                                    {isSavingEmail ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <Save className="w-5 h-5" />
+                                    )}
+                                    <span>GUARDAR</span>
+                                </button>
+                            </div>
+                            
+                            <div className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                <Info className="w-3 h-3" />
+                                <span>Recomendado usar el email corporativo del centro</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
