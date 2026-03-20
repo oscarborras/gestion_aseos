@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { entregarTurno, entregarTurnoGrupo, anularTurno } from '../actions'
-import { User, Key, Users, CheckCircle, Clock, X, AlertTriangle, CircleUser, History, ArrowRight, RefreshCw } from 'lucide-react'
-import { delay, motion, AnimatePresence } from 'framer-motion'
+import { User, Key, Users, Clock, X, AlertTriangle, CircleUser, History, RefreshCw } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
@@ -35,26 +35,21 @@ export default function EntregarClient({
     const router = useRouter()
     const [assignedWaitIds, setAssignedWaitIds] = useState<number[]>([])
     const [loading, setLoading] = useState(false)
-    const [isSuccess, setIsSuccess] = useState(false)
-    const [deliveredIds, setDeliveredIds] = useState<number[]>([])
     const [cancelingId, setCancelingId] = useState<number | null>(null)
     const [pendingCancel, setPendingCancel] = useState<WaitingItem | null>(null)
     const [lastTakers, setLastTakers] = useState<Record<number, string[]>>({})
     const [changingStudent, setChangingStudent] = useState<WaitingItem | null>(null)
     const [skippedWaitIds, setSkippedWaitIds] = useState<number[]>([])
-
-    // Estados para "congelar" la vista durante la transición
-    const [frozenStudents, setFrozenStudents] = useState<WaitingItem[]>([])
-    const [frozenNext, setFrozenNext] = useState<WaitingItem | undefined>(undefined)
+    const [lockedAseoId, setLockedAseoId] = useState<number | null>(null)
+    const [lockedStudentId, setLockedStudentId] = useState<number | null>(null)
+    const [isTransitioningToNext, setIsTransitioningToNext] = useState(false)
 
     // Refs para evitar problemas de clausura en Realtime sin re-subscribirse
     const loadingRef = useRef(loading)
-    const isSuccessRef = useRef(isSuccess)
 
     useEffect(() => {
         loadingRef.current = loading
-        isSuccessRef.current = isSuccess
-    }, [loading, isSuccess])
+    }, [loading])
 
     const availableAseos = aseos.filter(a => a.estado_id === 1)
 
@@ -118,7 +113,7 @@ export default function EntregarClient({
                 },
                 () => {
                     // Usar refs para obtener el valor más reciente sin re-subscribirse
-                    if (!loadingRef.current && !isSuccessRef.current) {
+                    if (!loadingRef.current) {
                         router.refresh()
                     }
                 }
@@ -136,7 +131,7 @@ export default function EntregarClient({
                     table: 'aseos'
                 },
                 () => {
-                    if (!loadingRef.current && !isSuccessRef.current) {
+                    if (!loadingRef.current) {
                         router.refresh()
                     }
                 }
@@ -202,50 +197,48 @@ export default function EntregarClient({
         return null
     }
 
-    const handleAseoChange = async (aseo: Aseo) => {
+    const handleAseoChange = (aseo: Aseo) => {
         if (!changingStudent) return;
 
         if (aseo.estado_id === 1) { // Libre
-            setLoading(true);
-            const result = await entregarTurno(changingStudent.id, changingStudent.alumno_id, aseo.id);
-            if (result.error) {
-                toast.error(result.error);
-            } else {
-                toast.success(`Llave entregada a ${changingStudent.nombre} en ${getAbbreviatedName(aseo.nombre)}`);
-                setDeliveredIds(prev => [...prev, changingStudent.id]);
-                if (assignedWaitIds.includes(changingStudent.id)) {
-                    setAssignedWaitIds(prev => prev.filter(id => id !== changingStudent.id));
-                }
-            }
-            setLoading(false);
+            setLockedAseoId(aseo.id);
+            setLockedStudentId(changingStudent.id);
+            toast.success(`Aseo cambiado a ${getAbbreviatedName(aseo.nombre)} para la entrega de ${changingStudent.nombre}`);
         } else { // Ocupado
-            toast.success(`${changingStudent.nombre} vuelve a la lista de espera al estar ocupado este aseo.`);
-            if (firstMatch && firstMatch.student.id === changingStudent.id) {
-                setSkippedWaitIds(prev => [...prev, changingStudent.id]);
-            }
-            if (assignedWaitIds.includes(changingStudent.id)) {
-                setAssignedWaitIds(prev => prev.filter(id => id !== changingStudent.id));
-            }
+            toast.error(`El aseo ${aseo.nombre} está ocupado y no se puede asignar.`);
         }
         setChangingStudent(null);
     }
 
     const firstMatch = initialAssignment()
 
+    // Lógica para fijar la asignación y evitar saltos automáticos ("sticky choice")
+    useEffect(() => {
+        if (!firstMatch) {
+            setLockedAseoId(null)
+            setLockedStudentId(null)
+            return
+        }
+
+        const currentAseo = aseos.find(a => a.id === lockedAseoId)
+        const isAseoStillAvailable = currentAseo && currentAseo.estado_id === 1
+
+        // Si el alumno ha cambiado (por ejemplo, al primero se le ha entregado la llave),
+        // o si el aseo que teníamos asignado ya no está libre, reseteamos a la sugerencia del sistema.
+        if (firstMatch.student.id !== lockedStudentId || !isAseoStillAvailable) {
+            setLockedStudentId(firstMatch.student.id)
+            setLockedAseoId(firstMatch.aseo.id)
+        }
+        // En cualquier otro caso (mismo alumno y aseo libre), no hacemos nada:
+        // si se libera un aseo "mejor" favorito del sistema, no saltaremos a él automáticamente.
+    }, [waitingList, aseos, firstMatch?.student.id, lockedAseoId, lockedStudentId])
+
+    const assignedAseo = aseos.find(a => a.id === lockedAseoId)
+
     // Lista de alumnos actualmente en el "Bloque 1" que aún no han sido marcados como entregados visualmente
     const currentStudents = firstMatch
         ? [firstMatch.student, ...waitingList.filter(s => assignedWaitIds.includes(s.id) && s.id !== firstMatch.student.id)]
-            .filter(s => !deliveredIds.includes(s.id))
         : []
-
-    // Encontrar al siguiente alumno que NO está en el reparto actual para mostrar como "próximo"
-    const nextInQueue = waitingList.find(s =>
-        !currentStudents.some(cs => cs.id === s.id) &&
-        !deliveredIds.includes(s.id) &&
-        (firstMatch ? s.id !== firstMatch.student.id : true)
-    )
-
-    const assignedAseo = firstMatch?.aseo
 
     const handleAddStudent = () => {
         if (!firstMatch) return
@@ -305,9 +298,6 @@ export default function EntregarClient({
     const handleDeliver = async () => {
         if (!assignedAseo || currentStudents.length === 0) return
 
-        // Congelar los alumnos actuales y el siguiente antes de empezar para que no desaparezcan
-        setFrozenStudents([...currentStudents])
-        setFrozenNext(nextInQueue)
         setLoading(true)
 
         const studentsToDeliver = [...currentStudents]
@@ -323,25 +313,24 @@ export default function EntregarClient({
         if (result.error) {
             setLoading(false)
             toast.error(result.error)
-            setFrozenStudents([])
-            setFrozenNext(undefined)
         } else {
-            // Iniciar animación de salida
-            setIsSuccess(true)
-            setDeliveredIds(prev => [...prev, ...studentsToDeliver.map(s => s.id)])
+            toast.success(
+                `${studentsToDeliver.length > 1 ? 'Llaves entregadas' : 'Llave entregada'} con éxito.`
+            )
 
-            toast.success(`${studentsToDeliver.length > 1 ? 'Llaves entregadas' : 'Llave entregada'} con éxito`)
+            setAssignedWaitIds([])
+            setLoading(false)
 
-            // Esperar 2 segundos para que la información del siguiente alumno sea plenamente legible
-            setTimeout(() => {
-                setDeliveredIds([])
-                setAssignedWaitIds([])
-                setIsSuccess(false)
-                setLoading(false)
-                setFrozenStudents([])
-                setFrozenNext(undefined)
+            // Si hay más alumnos después de esta entrega, mostramos el mensaje de "Cargando..."
+            if (waitingList.length > studentsToDeliver.length) {
+                setIsTransitioningToNext(true)
                 router.refresh()
-            }, 2000)
+                setTimeout(() => {
+                    setIsTransitioningToNext(false)
+                }, 2000)
+            } else {
+                router.refresh()
+            }
         }
     }
 
@@ -512,7 +501,14 @@ export default function EntregarClient({
                                 </div>
                             </div>
 
-                            {firstMatch && assignedAseo ? (
+                            {isTransitioningToNext ? (
+                                <div className="flex-grow flex flex-col items-center justify-center space-y-4 py-12">
+                                    <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-500 rounded-full animate-spin" />
+                                    <p className="text-slate-500 font-bold animate-pulse text-center">
+                                        Cargando el siguiente alumno...
+                                    </p>
+                                </div>
+                            ) : firstMatch && assignedAseo ? (
                                 <div className="space-y-6 flex-grow flex flex-col">
                                     <div className="rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 overflow-hidden shadow-lg shadow-amber-500/10">
                                         {/* Sección Aseo Destino - AHORA MÁS DESTACADA */}
@@ -541,7 +537,7 @@ export default function EntregarClient({
                                             </div>
                                             <div className="space-y-4">
                                                 <AnimatePresence mode="popLayout">
-                                                    {(isSuccess || loading ? frozenStudents : currentStudents).map((s) => (
+                                                    {currentStudents.map((s) => (
                                                         <motion.div
                                                             key={s.id}
                                                             layout
@@ -567,43 +563,10 @@ export default function EntregarClient({
                                                                 </button>
                                                                 <p className="text-xs text-slate-500 font-bold">{s.unidad}</p>
                                                             </div>
-                                                            {isSuccess && (
-                                                                <motion.div
-                                                                    initial={{ scale: 0 }}
-                                                                    animate={{ scale: 1 }}
-                                                                    className="text-emerald-500"
-                                                                >
-                                                                    <CheckCircle className="w-5 h-5" />
-                                                                </motion.div>
-                                                            )}
                                                         </motion.div>
                                                     ))}
                                                 </AnimatePresence>
 
-                                                {/* Información temporal sobre el siguiente alumno */}
-                                                <AnimatePresence>
-                                                    {(isSuccess || loading) && (frozenNext || nextInQueue) && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                                                            animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-                                                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                                                            className="p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl flex items-center justify-between overflow-hidden"
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center">
-                                                                    <ArrowRight className="w-4 h-4 text-indigo-600" />
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Siguiente en espera</p>
-                                                                    <p className="text-sm font-bold text-slate-700 dark:text-indigo-200">{(frozenNext || nextInQueue)?.nombre}</p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-[10px] bg-indigo-200/50 dark:bg-indigo-800/50 px-2 py-1 rounded-md font-bold text-indigo-700 dark:text-indigo-300">
-                                                                {(frozenNext || nextInQueue)?.unidad}
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
                                             </div>
                                         </div>
                                     </div>

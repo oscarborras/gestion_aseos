@@ -270,7 +270,7 @@ export function Sidebar({ roles = [], user, isOpen, onClose }: SidebarProps) {
                             </div>
                         </Link>
                     )}
-                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.15.0</span>
+                    <span className="block text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">v.1.16.0</span>
                 </div>
             </aside>
         </>
