@@ -413,9 +413,9 @@ export async function entregarTurno(waitingId: number, alumnoId: string, aseoId:
             if (config?.email_seguimiento) {
                 const now = new Date()
                 const formattedTime = format(now, "HH:mm 'de' d 'de' MMMM", { locale: es })
-                
+
                 await resend.emails.send({
-                    from: 'Aseos Julio Verne <onboarding@resend.dev>',
+                    from: 'Aseos Julio Verne <no-reply@iesjulioverne.es>',
                     to: config.email_seguimiento,
                     subject: `⚠️ Aviso de Seguimiento: ${alumno.alumno}`,
                     html: `
@@ -636,7 +636,7 @@ export async function getAseosConfig() {
 
 export async function updateSeguimientoEmail(email: string) {
     const supabase = await createClient()
-    
+
     const myRoles = await getUserRoles()
     if (!myRoles.includes('Admin') && !myRoles.includes('Directiva')) {
         return { error: 'No tienes permiso para realizar esta acción' }
